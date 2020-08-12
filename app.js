@@ -5,7 +5,7 @@ const exphbs = require ("express-handlebars")
 const connectDB = require('./config/db')
 
 //lod config
-dotenv.confi g({path: "./config/config.env"})
+dotenv.config({path: "./config/config.env"})
 
 connectDB()
 
@@ -17,7 +17,15 @@ if (process.env.NODE_ENV === "development"){
 }
 
 //Middleware : handlebars - the main pakage for the tamplate randering :(
-  
+// Handlebars 
+app.engine(
+  '.hbs',
+  exphbs({
+    defaultLayout: 'main',
+    extname: '.hbs',
+  })
+)
+app.set('view engine', '.hbs')
 
 
 const PORT = process.env.PORT || 5000
