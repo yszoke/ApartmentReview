@@ -1,6 +1,9 @@
+const path = require ("path")
 const express = require ("express")
 const dotenv = require ("dotenv")
 const morgan = require("morgan")
+const passport = require('passport')
+const sessions = require('express-session')
 const exphbs = require ("express-handlebars")
 const connectDB = require('./config/db')
 
@@ -27,6 +30,22 @@ app.engine(
 )
 app.set('view engine', '.hbs')
 
+//Middleware : Sessions (for passport)
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+}))
+
+//Middleware : Passport
+app.use(passport.initialize())
+app.use(passport.session())
+
+//Static Folder
+app.use(express.static(path.join(__dirname, 'public')))
+
+//Routs
+app.use('/', require ('./routes/index'))
 
 const PORT = process.env.PORT || 5000
 
