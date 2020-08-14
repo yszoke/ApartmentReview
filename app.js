@@ -31,7 +31,7 @@ app.engine(
 app.set('view engine', '.hbs')
 
 //Middleware : Sessions (for passport)
-app.use(session({
+app.use(sessions({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: false,
