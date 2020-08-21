@@ -10,6 +10,8 @@ const connectDB = require('./config/db')
 //lod config
 dotenv.config({path: "./config/config.env"})
 
+require('./config/passport')(passport)
+
 connectDB()
 
 const app = express();
