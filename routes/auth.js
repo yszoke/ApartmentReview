@@ -8,11 +8,13 @@ router.get('/google', passport.authenticate('google', {scope : ['profile' , 'ema
 
 //@desc google Auth Callback
 //@route GET /auth/google/callback
-router.get('/dashboard', passport.authenticate('google', {failureRedirect : '/'}),
-(req, res) => {
-  res.redirect('/dashboard')
-}
-)
+router.get("/auth/google/callback" , passport.authenticate('google' , {failureRedirect : '/'}) , (req, res) => {res.redirect('/welcome_bgus')});
+
+
+router.get("/welcome_bgus" , (req, res) => {  res.send('welcome_bgus!!')});
+
+
+// router.get('/dashboard', passport.authenticate('google', {failureRedirect : '/'}) , (req, res) => {  res.redirect('/dashboard')})
 
 
 module.exports = router

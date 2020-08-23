@@ -48,6 +48,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 //Routs
 app.use('/', require ('./routes/index'))
+app.use('/', require ('./routes/auth'))
 
 const PORT = process.env.PORT || 5000
 
