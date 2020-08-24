@@ -1,5 +1,5 @@
-const express = require ("express")
-const dotenv = require ("dotenv")
+const express = require ("./node_modules/express")
+const dotenv = require ("./node_modules/dotenv")
 const connectDB = require('../config/db')
 
 //lod config

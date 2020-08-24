@@ -5,12 +5,12 @@ const morgan = require("morgan")
 const passport = require('passport')
 const sessions = require('express-session')
 const exphbs = require ("express-handlebars")
-const connectDB = require('./hallow/db')
+const connectDB = require('./config/db')
 
 //lod config
 dotenv.config({path: "./config/config.env"})
 
-require('./hallow/passport')(passport)
+require('./config/passport')(passport)
 
 connectDB()
 
