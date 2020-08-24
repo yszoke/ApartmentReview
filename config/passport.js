@@ -11,6 +11,7 @@ module.exports = function (passport) {
         callbackURL: '/auth/google/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
+   
         console.log(profile._json.email)
         const newUser = {
           googleId: profile.id,
@@ -22,13 +23,16 @@ module.exports = function (passport) {
         }
 
         try {
-          let user = await User.findOne({ googleId: profile.id })
-
-          if (user) {
-            done(null, user)
-          } else {
-            user = await User.create(newUser)
-            done(null, user)
+          if(profile._json.email!="tomeroko2@gmail.com"){
+            let user = await User.findOne({ googleId: profile.id })
+            if (user) {
+              done(null, user)
+            } else {
+              user = await User.create(newUser)
+              done(null, user)
+            }
+          }else{
+            done(null)
           }
         } catch (err) {
           console.error(err)
@@ -38,6 +42,9 @@ module.exports = function (passport) {
   )
 
   passport.serializeUser((user, done) => {
+    if(user==null){
+      done("", null)
+    }
     done(null, user.id)
   })
 
