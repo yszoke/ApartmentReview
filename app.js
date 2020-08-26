@@ -21,16 +21,16 @@ if (process.env.NODE_ENV === "development"){
   app.use(morgan('dev'))
 }
 
-//Middleware : handlebars - the main pakage for the tamplate randering :(
-// Handlebars 
-app.engine(
-  '.hbs',
-  exphbs({
-    defaultLayout: 'main',
-    extname: '.hbs',
-  })
-)
-app.set('view engine', '.hbs')
+// //Middleware : handlebars - the main pakage for the tamplate randering :(
+// // Handlebars 
+// app.engine(
+//   '.hbs',
+//   exphbs({
+//     defaultLayout: 'main',
+//     extname: '.hbs',
+//   })
+// )
+// app.set('view engine', '.hbs')
 
 //Middleware : Sessions (for passport)
 app.use(sessions({
@@ -45,6 +45,9 @@ app.use(passport.session())
 
 //Static Folder
 app.use(express.static(path.join(__dirname, 'public')))
+
+app.use(express.json())
+app.use(express.urlencoded({extended : false}))
 
 //Routs
 app.use('/', require ('./routes/index'))
