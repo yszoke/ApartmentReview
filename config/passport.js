@@ -3,6 +3,12 @@ const mongoose = require('mongoose')
 const User = require('../models/User')
 
 module.exports = function (passport) {
+
+  function validateEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@*@post.bgu.ac.il$/;
+    return re.test(String(email).toLowerCase());
+}
+
   passport.use(
     new GoogleStrategy(
       {
@@ -23,7 +29,7 @@ module.exports = function (passport) {
         }
 
         try {
-          if(profile._json.email!="tomeroko2@gmail.com"){
+          if(validateEmail(profile._json.email)){
             let user = await User.findOne({ googleId: profile.id })
             if (user) {
               done(null, user)
@@ -52,3 +58,4 @@ module.exports = function (passport) {
     User.findById(id, (err, user) => done(err, user))
   })
 }
+
