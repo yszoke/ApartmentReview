@@ -36,16 +36,14 @@ const createUserObject = (profile) => {
 
         try {
           if(validateEmail(profile._json.email)){
-            let user = await User.findOne({ googleId: profile.id })
-            if (user) {
-              done(null, user)
-            } else {
-              user = await User.create(newUser)
-              done(null, user)
-            }
-          }else{
-            done(null)
-          }
+          let user = await User.findOne({ googleId: profile.id })
+          if (user) {
+            done(null, user)
+          } else {
+           user = await User.create(newUser)
+            done(null, user)
+          }  
+        }     
         } catch (err) {
           console.error(err)
         }

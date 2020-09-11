@@ -2,7 +2,6 @@ const express = require("express")
 const router = express.Router()
 const {
   ensureAuth,
-  ensureGest
 } = require('../middleware/auth')
 
 //@desc login/landing
@@ -13,12 +12,18 @@ router.get('/', (req, res) => {
 
 //@desc login/landing
 //@route GET /
-router.get('/isAuthUsers', (req, res) => {
-  res.json({
-    isAuth: true
-  })
+router.get('/isAuthUsers', ensureAuth, (req, res) => {
+  res.json({Auth : true})
 })
 
+
+
+/*
+const User = require('../models/User')
+
+
+
+*/
 //@desc login/landing
 //@route GET /
 router.get('/JsonOfAllStreets', ensureAuth, (req, res) => {
