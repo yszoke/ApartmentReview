@@ -3,15 +3,15 @@ const mongoose = require("mongoose");
 const APA_PostSchema = new mongoose.Schema({
   
   PostId: {
-    type: Number,
+    type: String,
     required: true,
   },
   UserId: {
-    type: Number,
+    type: String,
     required: true,
   },
   APA_Id: {
-    type: Number,
+    type: String,
     required: true,
   },
   startYear: {

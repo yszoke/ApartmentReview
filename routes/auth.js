@@ -1,6 +1,10 @@
 const express = require ("express")
 const passport = require("passport")
 const router = express.Router()
+const {
+  ensureAuth,
+} = require('../middleware/auth')
+
 
 //@desc google Auth
 //@route GET /auth/google
@@ -8,22 +12,45 @@ router.get('/google', passport.authenticate('google', {scope : ['profile' , 'ema
 
 //@desc google Auth Callback
 //@route GET /auth/google/callback
-router.get("/auth/google/callback" , passport.authenticate('google' , {failureRedirect : '/not_Auth'}) , (req, res) => {res.json({stat:'is auth'})});
+router.get("/auth/google/callback", passport.authenticate('google', {
+  failureRedirect: '/AuthFail',
+  successRedirect: '/AuthSucceed'
+}));
+
 
 //@desc google is Auth
-//@route GET /auth/google/callback
-router.get("/welcome_BGUs" , (req, res) => {  res.json('welcome_bgus!!')});
+router.get("/AuthSucceed" , (req, res) => {  
+  response.setHeader('status', 'AuthSucceed')
+  res.redirect('/frontEnd')
+});
 
 //@desc google Auth Callback
-//@route GET /auth/google/callback
-router.get("/not_BGUs" , (req, res) => {  res.send('sorry.. not a bgu mail')});
-
-//@desc google Auth Callback
-//@route GET /auth/google/callback
-router.get("not_Auth" , (req, res) => {  res.json({status:'not auth'})});
+router.get("/AuthFail" , (req, res) => {  
+  response.setHeader('status', 'AuthFailed')
+  res.redirect('/frontEnd')
+});
 
 
-// router.get('/dashboard', passport.authenticate('google', {failureRedirect : '/'}) , (req, res) => {  res.redirect('/dashboard')})
+//@desc google logout
+router.get('/logout' , (req, res) =>{
+  req.logOut()
+  response.setHeader('status', 'logged')
+  res.redirect('/frontEnd')
+})
+
+
+//@desc check if user is logged in
+router.get('/isAuthUsers', ensureAuth, (req, res) => {
+  res.json({Auth : true})
+})
+
+//@desc google logout
+router.get('/frontEnd' , (req, res) =>{
+  res.send(req.headers.status)
+})
+
+
+
 
 
 module.exports = router

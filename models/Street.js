@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 const StreetSchema = new mongoose.Schema({
   Id:{
-    type:Number,
-    required:true,
+    type: String,
+    required: true,
   },
   Name: {
     type: String,

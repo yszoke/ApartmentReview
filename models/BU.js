@@ -6,7 +6,7 @@ const BU_Schema = new mongoose.Schema({
     required: true,
   },
   BU_Id: {
-    type: Number,
+    type: String,
     required: true,
   },
   StreetId: {

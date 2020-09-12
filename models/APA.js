@@ -6,11 +6,11 @@ const APA_Schema = new mongoose.Schema({
     required: true,
   },
   APA_Id: {
-    type: Number,
+    type: String,
     required: true,
   },
   BU_Id: {
-    type: Number,
+    type: String,
     required: true,
   },
   StreetId: {

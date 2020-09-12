@@ -7,7 +7,7 @@ const sessions = require('express-session')
 const exphbs = require ("express-handlebars")
 const connectDB = require('./config/db')
 
-//lod config
+//lode config
 dotenv.config({path: "./config/config.env"})
 
 require('./config/passport')(passport)
@@ -32,27 +32,43 @@ if (process.env.NODE_ENV === "development"){
 // )
 // app.set('view engine', '.hbs')
 
-//Middleware : Sessions (for passport)
+
+//@desc Middleware : Sessions (for passport)
 app.use(sessions({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: false,
 }))
 
-//Middleware : Passport
+//@desc Middleware : Passport
 app.use(passport.initialize())
 app.use(passport.session())
 
-//Static Folder
+//@desc Static Folder
 app.use(express.static(path.join(__dirname, 'public')))
 
+//@desc Middleware : json parser
 app.use(express.json())
+
+//@desc Middleware : somthing to do with URLs
 app.use(express.urlencoded({extended : false}))
 
-//Routs
-app.use('/', require ('./routes/index'))
+//@desc Routs
 app.use('/', require ('./routes/auth'))
+app.use('/', require ('./routes/index'))
+app.use('/', require ('./routes/APIs'))
+
+
 
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT , console.log(`server runs in env ${process.env.NODE_ENV} mode with port ${PORT}`))
+
+/*
+let i = 0;
+
+setInterval(() => {
+  console.log('run '+i)
+  i++
+},1000)
+*/

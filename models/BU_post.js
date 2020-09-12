@@ -2,15 +2,15 @@ const mongoose = require('mongoose')
 
 const BU_PostSchema = new mongoose.Schema({
   PostId: {
-    type: Number,
+    type: String,
     required: true,
   },
   UserId: {
-    type: Number,
+    type: String,
     required: true,
   },
   BU_Id: {
-    type: Number,
+    type: String,
     required: true,
   },
   startYear: {
