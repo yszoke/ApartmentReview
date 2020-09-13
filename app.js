@@ -7,6 +7,7 @@ const sessions = require('express-session')
 const exphbs = require ("express-handlebars")
 const connectDB = require('./config/db')
 
+
 //lode config
 dotenv.config({path: "./config/config.env"})
 
@@ -63,6 +64,7 @@ app.use('/', require ('./routes/APIs'))
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT , console.log(`server runs in env ${process.env.NODE_ENV} mode with port ${PORT}`))
+
 
 /*
 let i = 0;

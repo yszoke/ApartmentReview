@@ -41,3 +41,5 @@ const APA_PostSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("APA_Post", APA_PostSchema);
+
+//  PostId:  UserId: APA_Id: startYear: endYear: APA_Text: APA_rank: rentCost: heshbonot:  

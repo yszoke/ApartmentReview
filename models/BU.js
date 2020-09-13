@@ -12,7 +12,24 @@ const BU_Schema = new mongoose.Schema({
   StreetId: {
     type: String,
     required: true,
-  }
+  },
+  Apartments: [{
+    Id:{
+      type: String,
+      required: true,
+    },
+    Name: {
+      type: String,
+      required: true,
+    }
+  }]
 })
 
 module.exports = mongoose.model('BU', BU_Schema)
+
+/*
+
+ BU_Name:  BU_Id:   StreetId:  Apartments: 
+
+*/
+

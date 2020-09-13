@@ -8,7 +8,17 @@ const StreetSchema = new mongoose.Schema({
   Name: {
     type: String,
     required: true,
-  }
+  },
+  Buildings: [{
+    Id:{
+      type: String,
+      required: true,
+    },
+    Name: {
+      type: String,
+      required: true,
+    }
+  }]
 })
 
 module.exports = mongoose.model('Street', StreetSchema)
