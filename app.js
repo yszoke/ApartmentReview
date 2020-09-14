@@ -1,11 +1,14 @@
 const path = require ("path")
 const express = require ("express")
+const mongoose = require ("mongoose")
 const dotenv = require ("dotenv")
 const morgan = require("morgan")
 const passport = require('passport')
-const sessions = require('express-session')
 const exphbs = require ("express-handlebars")
+const sessions = require('express-session')
+const mongoStore = require('connect-mongo')(sessions)
 const connectDB = require('./config/db')
+
 
 
 //lode config
@@ -36,9 +39,14 @@ if (process.env.NODE_ENV === "development"){
 
 //@desc Middleware : Sessions (for passport)
 app.use(sessions({
-  secret: 'keyboard cat',
+  secret: process.env.sessionPaswword,
   resave: false,
   saveUninitialized: false,
+  store : new mongoStore({
+    mongooseConnection: mongoose.connection
+  }),
+  expires: new Date(Date.now() + (3 * 60 * 60 * 1000)),// 3 hours session
+  maxAge: Date.now() + (3 * 60 * 60 * 1000)// 3 hours session
 }))
 
 //@desc Middleware : Passport
@@ -66,11 +74,3 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT , console.log(`server runs in env ${process.env.NODE_ENV} mode with port ${PORT}`))
 
 
-/*
-let i = 0;
-
-setInterval(() => {
-  console.log('run '+i)
-  i++
-},1000)
-*/

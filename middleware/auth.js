@@ -1,12 +1,13 @@
+const querystring = require('querystring');    
+
 module.exports = {
   
   ensureAuth: function (req, res, next) {
     if (req.isAuthenticated()) {
       return next()
     } else {
-      res.setHeader('status', 'dennied')
+      req.session.status = "dennied";
       res.redirect('/frontEnd')
     }
   }
-  
 }

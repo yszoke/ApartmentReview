@@ -207,66 +207,69 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
 
 //@desc get all streets
 router.get('/getAllStreets', ensureAuth, async (req , res)=>{  
-  res.json(await Street.find({},{Id:1, Name:1, Buildings:0}))
+  res.json(await Street.find({},{_id:0, Buildings:0}))// Id:1, Name:1
 })
 
 
 //@desc get all buildings in a street
 router.get('/getBuildings', ensureAuth, async (req, res) => {
-  res.json(await Street.find({Id:req.body.StreetId},{Id:0, Name:0, Buildings:1}))
+  res.json(await Street.find({Id:req.body.StreetId},{_id:0, Id:0, Name:0})) //Buildings:1
 })
 
 
 //@desc get all apartments in a Building
 router.post('/getApartments', ensureAuth, async (req, res) => {
   res.json(await BU.find({BU_Id : req.body.BuildingId},{ 
+    _id:0,
     BU_Name: 0,
     BU_Id:0,
-    StreetId:0,
-    Apartments: 1 }))
+    StreetId:0
+    // Apartments: 1
+  }))
 })
 
 
 //@desc get all apartment posts for an apartment
-router.get('/getApartmentPost', ensureAuth, async(req, res) => {
+router.get('/getApartmentPosts', ensureAuth, async(req, res) => {
   res.json(await APA_Post.find({APA_Id:req.body.ApartmentId},{
-    PostId:1, 
+    _id:0,
+    // PostId:1, 
     UserId:0,
     APA_Id:0,
-    startYear:1,
-    endYear:1,
-    APA_Text:1,
-    APA_rank:1,
-    rentCost:1,
-    heshbonot:1}))
+    // startYear:1,
+    // endYear:1,
+    // APA_Text:1,
+    // APA_rank:1,
+    // rentCost:1,
+    // heshbonot:1
+  }))
 })
 
 
 //@desc get all building post for a building
-router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
+router.get('/getBuildingPosts', ensureAuth, async(req, res) => {
   BU_Post.create(newBuilding)
   res.json(await BU_Post.find({BU_Id: req.body.BuildingId},{
-    PostId: 1,
+    _id:0,
+    // PostId: 1,
     UserId: 0,
     BU_Id: 0,
     apartamentID : 0,
-    startYear: 1,
-    endYear: 1,
-    BU_Students: 1,
-    BU_Text: 1,
-    BU_rank: 1 
+    // startYear: 1,
+    // endYear: 1,
+    // BU_Students: 1,
+    // BU_Text: 1,
+    // BU_rank: 1 
   }))
 })
 
 
 //////////////////          update            ///////////////////////////
 
-//@desc get a buliding to a street
-//@desc add an apartment to a building
-//@desc get all building post for a building
 
-//@desc change a post
-
+// router.post("/updatePost" , ensureAuth , (req , res) => {
+//   if (req.body.postUserId){}
+// })
 
 
 
