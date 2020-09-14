@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 const APA_Schema = new mongoose.Schema({
+  CreatorsGoogleID: {
+    type: String,
+    required: true,
+  },
   APA_Name: {
     type: String,
     required: true,

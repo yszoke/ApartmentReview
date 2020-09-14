@@ -1,7 +1,11 @@
 const mongoose = require('mongoose')
 
 const BU_Schema = new mongoose.Schema({
- BU_Name: {
+  CreatorsGoogleID: {
+    type: String,
+    required: true,
+  },
+  BU_Name: {
     type: String,
     required: true,
   },

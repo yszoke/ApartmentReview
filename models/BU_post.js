@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 const BU_PostSchema = new mongoose.Schema({
+  CreatorsGoogleID: {
+    type: String,
+    required: true,
+  },
   PostId: {
     type: String,
     required: true,
