@@ -11,7 +11,7 @@ const User = require('../models/User')
 
 
 //only for development
-router.get("/load", ensureAuth, async (req , res)=>{
+router.post("/load", ensureAuth, async (req , res)=>{
   const streets=['אביה השופט',
   'אברהם אבינו',
   'אוסבלדו ארניה',
@@ -116,33 +116,32 @@ router.get("/load", ensureAuth, async (req , res)=>{
 /*     End Points            */
 ///////////////////////////////
 
-//////////////////          POST            ///////////////////////////
+
+//////////////////          CREATE            ///////////////////////////
 
 //@desc create new street
 router.post('/createStreet', ensureAuth, async (req , res)=>{
   const newStreet = {
-    Id:uuidv4(),
-    Name: req.body.streetName,
-    Buildings:[]
+    ST_Id:uuidv4(),
+    DB_Name: req.body.streetName,
+    DB_Buildings:[]
   }
   if(req.body.paswword == process.env.adminPaswword) await Street.create(newStreet)  
-  res.json({id: newStreet.Id})
+  res.json({id: newStreet.ST_Id})
 })
 
 
 //@desc create new building
 router.post('/createBuilding', ensureAuth, async (req, res) => {
   const newBuilding={
-    BU_Id: uuidv4(),
     CreatorsGoogleID : req.user.googleId,//for security ONLY
-    BU_Name: req.body.BuildingName,
-    StreetId: req.body.StreetId,
-    Apartments : [],
-    user
-
+    BU_Id: uuidv4(),
+    BU_Name: req.body.buildingName,
+    ST_Id: req.body.streetId,
+    DB_Apartments : [],
   }
   await BU.create(newBuilding)
-  await Street.findByIdAndUpdate({Id:newBuilding.StreetId}, {$push: {Buildings: {
+  await Street.findByIdAndUpdate({BU_Id:newBuilding.BU_Id}, {$push: {DB_Buildings: {
     Id: newBuilding.BU_Id,
     Name: newBuilding.BU_Name
   }}})
@@ -156,11 +155,11 @@ router.post('/createApartment', ensureAuth, async (req, res) => {
     APA_Id: uuidv4(),
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     BU_Id: req.body.buildingId,
-    StreetId: req.body.StreetId,
-    APA_Name: req.body.apartamentName
+    ST_Id: req.body.streetId,
+    APA_Name: req.body.apartmentName
   }
   await APA.create(newApartment)
-  await BU.findByIdAndUpdate({Id:newApartment.StreetId}, {$push: { Apartments:{
+  await BU.findByIdAndUpdate({BU_Id:newApartment.BU_Id}, {$push: { DB_Apartments:{
     Id: newApartment.APA_Id,
     Name: newApartment.APA_Name
   }}})
@@ -171,136 +170,251 @@ router.post('/createApartment', ensureAuth, async (req, res) => {
 //@desc create new apartment post
 router.post('/createApartmentPost', ensureAuth, async (req, res) => {
   const newAppartmentPost={
-    PostId: uuidv4(),
-    UserId: req.body.userId,
+    Post_Id: uuidv4(),
+    User_Id: req.user.userId,
     CreatorsGoogleID : req.user.googleId,//for security ONLY
-    APA_Id : req.body.apartamentID,
-    startYear: req.body.startYear,
-    endYear: req.body.endYear,
+    APA_Id : req.body.apartamentId,
+    S_Year: req.body.startYear,
+    E_Year: req.body.endYear,
     APA_Text: req.body.apartamentText,
     APA_rank: req.body.rank,
-    rentCost: req.body.rentCost,
-    heshbonot: req.body.heshbonot,
-  }
+    Cost: req.body.rentCost,
+    bills: req.body.heshbonot,
+  }       
   await APA_Post.create(newAppartmentPost)
-  res.json({id: newAppartmentPost.PostId})
+  res.json({id: newAppartmentPost.Post_Id})
 })
 
 
 //@desc create new building post
 router.post('/createBuildingPost', ensureAuth, async (req, res) => {
   const newBuildingPost={
-    PostId: uuidv4(),
-    UserId: req.body.userId,
+    Post_Id: uuidv4(),
+    User_Id: req.user.userId,
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     BU_Id: req.body.buildingId,
-    apartamentID : req.body.apartamentID,
-    startYear: req.body.startYear,
-    endYear: req.body.endYear,
+    APA_Id : req.body.apartamentID,
+    S_Year: req.body.startYear,
+    E_Year: req.body.endYear,
     BU_Students: req.body.levelOfStudents,
     BU_Text: req.body.buildingText,
     BU_rank: req.body.buildingRank,
   }
   await BU_Post.create(newBuilding)
-  res.json({id: newBuildingPost.PostId})
+  res.json({id: newBuildingPost.Post_Id})
 })
 
 
+//////////////////          READ            ///////////////////////////
 
-//////////////////          GET            ///////////////////////////
-
-
-
-//@desc get all streets
-router.get('/getAllStreets', ensureAuth, async (req , res)=>{  
-  res.json(await Street.find({},{_id:0, Buildings:0}))// Id:1, Name:1
+//@desc post all streets
+router.post('/postAllStreets', ensureAuth, async (req , res)=>{  
+  const DB_Streets = await Street.find({},{_id:0, DB_Buildings:0}) //ST_Id: 1  DB_Name: 1
+  let API_Streets = []
+  DB_Streets.forEach((element)=>{
+    API_Streets.push({
+      Id: element.ST_Id,
+      streetName: element.DB_Name
+    })
+  })
+  res.json(API_Streets)
 })
 
 
-//@desc get all buildings in a street
-router.get('/getBuildings', ensureAuth, async (req, res) => {
-  res.json(await Street.find({Id:req.body.StreetId},{_id:0, CreatorsGoogleID: 0, Id:0, Name:0})) //Buildings:1
+//@desc post all buildings in a street
+router.post('/postBuildings', ensureAuth, async (req, res) => {
+  const API_buildings = await Street.findOne({ST_Id:req.body.StreetId},{
+    _id:0,
+    CreatorsGoogleID: 0,
+    Id:0,
+    Name:0
+    //DB_Buildings:1
+  })
+  res.json(API_buildings.DB_Buildings)
 })
 
 
-//@desc get all apartments in a Building
-router.post('/getApartments', ensureAuth, async (req, res) => {
-  res.json(await BU.find({BU_Id : req.body.BuildingId},{ 
+//@desc post all apartments in a Building
+router.post('/postApartments', ensureAuth, async (req, res) => {
+  const API_Apartments = await BU.find({BU_Id : req.body.BuildingId},
+  { 
     _id:0,
     CreatorsGoogleID: 0,
     BU_Name: 0,
     BU_Id:0,
-    StreetId:0,
-    // Apartments: 1
-  }))
+    ST_Id:0,
+    // DB_Apartments: 1
+  })
+  res.json(API_Apartments.DB_Apartments)
 })
 
 
-//@desc get all apartment posts for an apartment
-router.get('/getApartmentPosts', ensureAuth, async(req, res) => {
-  res.json(await APA_Post.find({APA_Id:req.body.ApartmentId},{
-    _id:0,
+//@desc post all apartment posts for an apartment
+router.post('/postApartmentPosts', ensureAuth, async (req, res) => {
+  const DB_ApartmentPosts = await APA_Post.find({APA_Id: req.body.ApartmentId},
+  {
+    _id: 0,
     CreatorsGoogleID: 0,
-    // PostId:1, 
-    UserId:0,
-    APA_Id:0,
-    // startYear:1,
-    // endYear:1,
+    // Post_Id:1, 
+    User_Id: 0,
+    APA_Id: 0,
+    // S_Year:1,
+    // E_Year:1,
     // APA_Text:1,
     // APA_rank:1,
-    // rentCost:1,
-    // heshbonot:1
-  }))
+    // Cost:1,
+    // bills:1
+  })
+  let API_ApartmentPosts = []
+  DB_ApartmentPosts.forEach((element) => {
+    API_ApartmentPosts.push(
+    {
+      postId: element.Post_Id,
+      startYear: element.S_Year,
+      endYear: element.E_Year,
+      apartamentText: element.APA_Text,
+      rank: element.APA_rank,
+      rentCost: element.Cost,
+      heshbonot: element.bills
+    })
+  })
+  res.json(API_ApartmentPosts)
 })
 
 
-//@desc get all building post for a building
-router.get('/getBuildingPosts', ensureAuth, async(req, res) => {
+//@desc post all building post for a building
+router.post('/postBuildingPosts', ensureAuth, async(req, res) => {
   BU_Post.create(newBuilding)
   res.json(await BU_Post.find({BU_Id: req.body.BuildingId},{
     _id:0,
     CreatorsGoogleID: 0,
-    // PostId: 1,
-    UserId: 0,
+    // Post_Id: 1,
+    User_Id: 0,
     BU_Id: 0,
-    apartamentID : 0,
-    // startYear: 1,
-    // endYear: 1,
+    APA_Id : 0,
+    // S_Year: 1,
+    // E_Year: 1,
     // BU_Students: 1,
     // BU_Text: 1,
     // BU_rank: 1 
   }))
+  let API_BuildingPosts = []
+  DB_BuildingPosts.forEach((element) => {
+    API_BuildingPosts.push(
+    {
+      postId: element.Post_Id,
+      startYear: element.S_Year,
+      endYear: element.E_Year,
+      apartamentText: element.APA_Text,
+      rank: element.APA_rank,
+      levelOfStudents: element.BU_Students,
+      buildingText: element.BU_Text,
+      buildingRank: element.BU_rank
+    })
+  })
+  res.json(API_BuildingPosts)
 })
 
 
-//////////////////          update            ///////////////////////////
+//@desc post all apartment posts that belongs to a user
+router.post('/postMyApartmentPosts', ensureAuth, async (req, res) => {
+  const DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.userId},
+  {
+    _id: 0,
+    CreatorsGoogleID: 0,
+    // Post_Id:1, 
+    User_Id: 0,
+    // APA_Id: 1,
+    // S_Year:1,
+    // E_Year:1,
+    // APA_Text:1,
+    // APA_rank:1,
+    // Cost:1,
+    // bills:1
+  })
+  let API_ApartmentPosts = []
+  DB_ApartmentPosts.forEach((element) => {
+    API_ApartmentPosts.push(
+    {
+      postId: element.Post_Id,
+      apartamentId: element.APA_Id,
+      startYear: element.S_Year,
+      endYear: element.E_Year,
+      apartamentText: element.APA_Text,
+      rank: element.APA_rank,
+      rentCost: element.Cost,
+      heshbonot: element.bills
+    })
+  })
+  res.json(API_ApartmentPosts)
+})
 
-router.put('/updateBU_Post' , ensureAuth , async (req , res) => {
-  if(await APA_Post.findOne({PostId : req.body.IdOfPost}).userId == req.user.userId){
-    await APA_Post.update(
-      { PostId : req.body.IdOfPost },
-      { $set:
-         {
-          startYear: req.body.startYear,
-          endYear: req.body.endYear,
-          APA_Text: req.body.apartamentText,
-          APA_rank: req.body.rank,
-          rentCost: req.body.rentCost,
-          heshbonot: req.body.heshbonot,
-         }
+
+//@desc post all building post that belongs to a user
+router.post('/postMyBuildingPosts', ensureAuth, async(req, res) => {
+  BU_Post.create(newBuilding)
+  res.json(await BU_Post.find({User_Id: req.user.userId},{
+    _id:0,
+    CreatorsGoogleID: 0,
+    // Post_Id: 1,
+    User_Id: 0,
+    // BU_Id: 1,
+    APA_Id : 0,
+    // S_Year: 1,
+    // E_Year: 1,
+    // BU_Students: 1,
+    // BU_Text: 1,
+    // BU_rank: 1 
+  }))
+  let API_BuildingPosts = []
+  DB_BuildingPosts.forEach((element) => {
+    API_BuildingPosts.push(
+    {
+      postId: element.Post_Id,
+      buildingId: element.BU_Id,
+      startYear: element.S_Year,
+      endYear: element.E_Year,
+      apartamentText: element.APA_Text,
+      rank: element.APA_rank,
+      levelOfStudents: element.BU_Students,
+      buildingText: element.BU_Text,
+      buildingRank: element.BU_rank
+    })
+  })
+  res.json(API_BuildingPosts)
+})
+
+
+//////////////////          UPDATE            ///////////////////////////
+
+//@desc update apartment post only if authonticated user id is muching the post id
+router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
+  if(await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId){
+    await APA_Post.findOneAndUpdate(
+      { Post_Id : req.body.IdOfPost },
+      { $set:{
+        S_Year: req.body.startYear,
+        E_Year: req.body.endYear,
+        APA_Text: req.body.apartamentText,
+        APA_rank: req.body.rank,
+        Cost: req.body.rentCost,
+        bills: req.body.heshbonot,
+       }
       }
-   )
+    )
   }
 })
 
-router.put('/updateBU_Post' , ensureAuth , async (req , res) => {
-  if(await BU_Post.findOne({PostId : req.body.IdOfPost}).userId == req.user.userId){
-    await BU_Post.update(
-      { PostId : req.body.IdOfPost },
+
+//@desc update building post only if authonticated user id is muching the post id
+router.post('/updateBuildingPost' , ensureAuth , async (req , res) => {
+  if(await BU_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId){
+    await BU_Post.findOneAndUpdate(
+      { Post_Id : req.body.IdOfPost },
       { $set:
          {
-          startYear: req.body.startYear,
-          endYear: req.body.endYear,
+          S_Year: req.body.startYear,
+          E_Year: req.body.endYear,
           BU_Students: req.body.levelOfStudents,
           BU_Text: req.body.buildingText,
           BU_rank: req.body.buildingRank,
@@ -311,19 +425,26 @@ router.put('/updateBU_Post' , ensureAuth , async (req , res) => {
 })
 
 
-//////////////////          delet            ///////////////////////////
+//////////////////          DELETE            ///////////////////////////
 
 //@desc delet post by post id only if userId is muching
-
-router.delete('/updateBU_Post' , ensureAuth , async (req , res) => {
-  if(await APA_Post.findOne({PostId : req.body.IdOfPost}).userId == req.user.userId){
-    await APA_Post.findOneAndDelete({PostId : req.body.IdOfPost})
+router.post('/deleteApartmentPost' , ensureAuth , async (req , res) => {
+  if(await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId){
+    await APA_Post.findOneAndDelete({Post_Id : req.body.IdOfPost})
+    res.json({isDeleted:true})
+  }else{
+  res.json({isDeleted:true})
   }
 })
 
-router.delete('/updateBU_Post' , ensureAuth , async (req , res) => {
-  if(await BU_Post.findOne({PostId : req.body.IdOfPost}).userId == req.user.userId){
-    await BU_Post.findOneAndDelete({PostId : req.body.IdOfPost})
+
+//@desc delet post by post id only if userId is muching
+router.post('/deleteBuildingPost' , ensureAuth , async (req , res) => {
+  if(await BU_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId){
+    await BU_Post.findOneAndDelete({Post_Id : req.body.IdOfPost})
+    res.json({isDeleted:true})
+  }else{
+  res.json({isDeleted:true})
   }
 })
 
@@ -352,7 +473,7 @@ router.delete('/updateBU_Post' , ensureAuth , async (req , res) => {
 
 
 //@desc login/landing
-router.get('/JsonOfAllStreets', ensureAuth, (req, res) => {
+router.post('/JsonOfAllStreets', ensureAuth, (req, res) => {
   res.json([{
     name: "צ'רניכובסקי",
     id: 2040135469834
@@ -364,7 +485,7 @@ router.get('/JsonOfAllStreets', ensureAuth, (req, res) => {
 
 //@desc login/landing
 //@route GET /
-router.get('/JsonOfAllBuilding', ensureAuth, (req, res) => {
+router.post('/JsonOfAllBuilding', ensureAuth, (req, res) => {
   const steetId = req.body.streetId;
   res.json([{
     name: `1`,
@@ -377,7 +498,7 @@ router.get('/JsonOfAllBuilding', ensureAuth, (req, res) => {
 
 //@desc login/landing
 //@route GET /
-router.get('/JsonOfAllApartments', ensureAuth, (req, res) => {
+router.post('/JsonOfAllApartments', ensureAuth, (req, res) => {
   const buldingId = req.body.streetId;
   res.json([{
     name: `1`,
@@ -390,8 +511,8 @@ router.get('/JsonOfAllApartments', ensureAuth, (req, res) => {
 
 //@desc login/landing
 //@route GET /
-router.get('/JsonOfAllComments', ensureAuth, (req, res) => {
-  const appartamentId = req.body.appartmentId;
+router.post('/JsonOfAllComments', ensureAuth, (req, res) => {
+  const apartamentId = req.body.apartmentId;
   res.json({
     apartmentComments: [{
       apartamentID: 1937135469834,

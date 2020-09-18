@@ -1,15 +1,15 @@
 const mongoose = require('mongoose')
 
 const StreetSchema = new mongoose.Schema({
-  Id:{
+  ST_Id:{
     type: String,
     required: true,
   },
-  Name: {
+  DB_Name: {
     type: String,
     required: true,
   },
-  Buildings: [{
+  DB_Buildings: [{
     Id:{
       type: String,
       required: true,
@@ -22,3 +22,4 @@ const StreetSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model('Street', StreetSchema)
+//DB:API ST_Id:Id  DB_Name:streetName  DB_Buildings:Buildings

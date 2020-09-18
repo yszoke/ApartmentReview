@@ -5,11 +5,11 @@ const APA_PostSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  PostId: {
+  Post_Id: {
     type: String,
     required: true,
   },
-  UserId: {
+  User_Id: {
     type: String,
     required: true,
   },
@@ -17,11 +17,11 @@ const APA_PostSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  startYear: {
+  S_Year: {
     type: Number,
     required: true,
   },
-  endYear: {
+  E_Year: {
     type: Number,
     required: true,
   },
@@ -33,11 +33,11 @@ const APA_PostSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  rentCost: {
+  Cost: {
     type: Number,
     required: true,
   },
-  heshbonot:  {
+  bills:  {
     type: Number,
     required: false,
   }
@@ -45,4 +45,5 @@ const APA_PostSchema = new mongoose.Schema({
 
 module.exports = mongoose.model("APA_Post", APA_PostSchema);
 
-//  PostId:  UserId: APA_Id: startYear: endYear: APA_Text: APA_rank: rentCost: heshbonot:  
+// DB CreatorsGoogleID Post_Id User_Id APA_Id S_Year E_Year APA_Text APA_rank Cost bills
+// API userId googleId apartamentId startYear endYear apartamentText rank rentCost heshbonot

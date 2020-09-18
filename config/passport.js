@@ -35,7 +35,6 @@ module.exports = function (passport) {
 
         console.log(profile._json.email)
         const newUser = createUserObject(profile)
-
         try {
           if (validateEmail(profile._json.email)) {
             let user = await User.findOne({
@@ -45,11 +44,13 @@ module.exports = function (passport) {
               done(null, user)
             } else {
               user = await User.create(newUser)
-              done(null, user)
+              done(null, user, {A_status : "new User"})
             }
+          }else{
+            done("none bgu")
           }
         } catch (err) {
-          console.error(err)
+          done("connectin error")
         }
       }
     )

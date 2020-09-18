@@ -5,11 +5,11 @@ const BU_PostSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  PostId: {
+  Post_Id: {
     type: String,
     required: true,
   },
-  UserId: {
+  User_Id: {
     type: String,
     required: true,
   },
@@ -17,11 +17,15 @@ const BU_PostSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  startYear: {
+  APA_Id:{
+    type: String,
+    required: true,
+  },
+  S_Year: {
     type: Number,
     required: true,
   },
-  endYear: {
+  E_Year: {
     type: Number,
     required: true,
   },
@@ -40,3 +44,6 @@ const BU_PostSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model('BU_Post', BU_PostSchema)
+
+//DB:API CreatorsGoogleID:null Post_Id:postId User_Id:userId BU_Id:buildingId APA_Id:apartamentID S_Year:startYear E_Year:endYear BU_Students:levelOfStudents BU_Text:buildingText BU_rank:buildingRank
+ 

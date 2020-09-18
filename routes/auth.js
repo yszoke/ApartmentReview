@@ -5,7 +5,7 @@ const {
   ensureAuth,
 } = require('../middleware/auth')
 const querystring = require('querystring');    
-
+const { Router } = require("express");
 
 
 //@desc google Auth
@@ -14,16 +14,27 @@ router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }))
 
-//@desc google Auth Callback
-//@route GET /auth/google/callback
-router.get("/auth/google/callback", passport.authenticate('google', {
-  failureRedirect: '/AuthFail',
-  successRedirect: '/AuthSucceed'
-}));
+// //@desc google Auth Callback
+// // @route GET /auth/google/callback
+router.get('/auth/google/callback',(req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err) { //error while authenticate
+      req.session.status = err
+      res.redirect('/frontEnd')
+    }
+    req.logIn(user, function (err) {
+      if (err) { //error wile logIn
+        req.session.status = err
+        return res.redirect('/frontEnd')
+      }
+      return res.redirect('/AuthSucceed');
+    });
+  })(req, res, next);
+});
 
 
 //@desc google is Auth
-router.get("/AuthSucceed", (req, res) => {
+router.get("/AuthSucceed", ensureAuth, (req, res) => {
   req.session.status = 'AuthSucceed'
   res.redirect('/frontEnd')
 });
@@ -36,7 +47,7 @@ router.get("/AuthFail", (req, res) => {
 
 
 //@desc google logout
-router.get('/logout', (req, res) => {
+router.get('/logout', ensureAuth, (req, res) => {
   req.logOut()
   req.session.status = 'logged out'
   res.redirect('/frontEnd')
@@ -51,34 +62,7 @@ router.get('/isAuthUsers', ensureAuth, (req, res) => {
 
 //@desc google logout
 router.get('/frontEnd', (req, res) => {
-  // try {
-  //   console.log(req.user)
-  // } catch (error) {
-    
-  // }
   res.send(req.session.status || "didnt tried to logged in yet")
 })
-
-// app.get('/category', function(req, res) {
-//       const query = querystring.stringify({
-//           "a": 1,
-//           "b": 2,
-//           "valid":"your string here"
-//       });
-//       res.redirect('/?' + query);
-//  });
-
-
-
-/*router.get('/frontEnd' , (req, res) =>{
-  console.log("--------------------------------------------------------------------")
-  console.log(req.headers)
-  console.log("--------------------------------------------------------------------")
-  console.log(res.header()._headers)
-  console.log("--------------------------------------------------------------------")
-  console.log(res.getHeaders("status"))
-  console.log("--------------------------------------------------------------------")
-  console.log("hallow")
-  res.send()*/
 
 module.exports = router

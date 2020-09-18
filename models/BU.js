@@ -13,11 +13,11 @@ const BU_Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  StreetId: {
+  ST_Id: {
     type: String,
     required: true,
   },
-  Apartments: [{
+  DB_Apartments: [{
     Id:{
       type: String,
       required: true,
@@ -31,9 +31,5 @@ const BU_Schema = new mongoose.Schema({
 
 module.exports = mongoose.model('BU', BU_Schema)
 
-/*
-
- BU_Name:  BU_Id:   StreetId:  Apartments: 
-
-*/
+// DB:API CreatorsGoogleID:null BU_Name:buildingName BU_Id:buildinId ST_Id:streetId DB_Apartments:apartments
 
