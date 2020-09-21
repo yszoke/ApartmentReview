@@ -41,9 +41,21 @@ const BU_PostSchema = new mongoose.Schema({
     type: Number,
     required: true,
   }
-})
+},{autoIndex:false})
+
+//unique inforcment indexes
+BU_PostSchema.index({BU_Id:1, User_Id:1}, { unique: true })
+
+//quering efficency indexes
+BU_PostSchema.index({BU_Id:1, User_Id:1}, { unique: true })
+
 
 module.exports = mongoose.model('BU_Post', BU_PostSchema)
 
 //DB:API CreatorsGoogleID:null Post_Id:postId User_Id:userId BU_Id:buildingId APA_Id:apartamentID S_Year:startYear E_Year:endYear BU_Students:levelOfStudents BU_Text:buildingText BU_rank:buildingRank
  
+
+//unique inforcment indexes
+
+//quering efficency indexes
+BU_PostSchema.index({Post_Id:1})

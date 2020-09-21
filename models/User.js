@@ -29,6 +29,13 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-})
+},{autoIndex:false})
+
+
+//unique inforcment indexes
+
+//quering efficency indexes
+UserSchema.index({userId:1})
 
 module.exports = mongoose.model('User', UserSchema)
+

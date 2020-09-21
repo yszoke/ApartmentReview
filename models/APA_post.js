@@ -41,7 +41,15 @@ const APA_PostSchema = new mongoose.Schema({
     type: Number,
     required: false,
   }
-});
+},{autoIndex:false});
+
+//unique inforcment indexes
+APA_PostSchema.index({APA_Id:1, User_Id:1}, { unique: true })
+
+//quering efficency indexes
+APA_PostSchema.index({Post_Id:1})
+
+
 
 module.exports = mongoose.model("APA_Post", APA_PostSchema);
 

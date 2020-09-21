@@ -8,6 +8,8 @@ const exphbs = require ("express-handlebars")
 const sessions = require('express-session')
 const mongoStore = require('connect-mongo')(sessions)
 const connectDB = require('./config/db')
+const rateLimiter = require ('./middleware/rateLimiter')
+
 
 
 
@@ -36,6 +38,8 @@ if (process.env.NODE_ENV === "development"){
 // )
 // app.set('view engine', '.hbs')
 
+//@desc Middleware : express-rate-limit
+app.use(rateLimiter);
 
 //@desc Middleware : Sessions (for passport)
 app.use(sessions({

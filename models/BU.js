@@ -27,9 +27,14 @@ const BU_Schema = new mongoose.Schema({
       required: true,
     }
   }]
-})
+},{autoIndex:false})
 
-module.exports = mongoose.model('BU', BU_Schema)
+//unique inforcment indexes
+BU_Schema.index({ST_Id:1, BU_Name:1}, { unique: true })
+
+//quering efficency indexes
+BU_Schema.index({BU_Id:1})
+
+module.exports = mongoose.model('Buildings', BU_Schema)
 
 // DB:API CreatorsGoogleID:null BU_Name:buildingName BU_Id:buildinId ST_Id:streetId DB_Apartments:apartments
-

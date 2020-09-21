@@ -62,7 +62,8 @@ router.get('/isAuthUsers', ensureAuth, (req, res) => {
 
 //@desc google logout
 router.get('/frontEnd', (req, res) => {
-  res.send(req.session.status || "didnt tried to logged in yet")
+  const result=(req.session.status || "didnt tried to logged in yet")
+  res.json({status:result})
 })
 
 module.exports = router

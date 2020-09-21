@@ -19,7 +19,10 @@ const StreetSchema = new mongoose.Schema({
       required: true,
     }
   }]
-})
+},{autoIndex:false})
+
+StreetSchema.index({DB_Name:1}, { unique: true })
 
 module.exports = mongoose.model('Street', StreetSchema)
-//DB:API ST_Id:Id  DB_Name:streetName  DB_Buildings:Buildings
+//DB:API ST_Id:Id  DB_Name:streetName  DB_Buildings:Buildingsindex
+
