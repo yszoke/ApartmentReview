@@ -114,9 +114,15 @@ router.post("/load", ensureAuth, ensureAdmin, async (req , res)=>{
 })
 
 const errorHandler=(res , error , name , code)=>{
-  if(error) {return res.json({code: error.code, name:error.name})}
+  if(error) { res.json(error)}//({code: error.code, name:error.name, errors: error.errors.kind, kind: error.kind, path: error.path})}
   return res.json({code: code, name:name})
 }
+
+const yearValidate = (num) => {
+  const year = new Date().getFullYear()
+  return Number.isInteger(num)? (num+5> year && num<year+1) ? num : null : null
+}
+
 
 
 ///////////////////////////////
@@ -192,8 +198,8 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
     User_Id: req.user.userId,
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     APA_Id : (req.body.apartmentId ? (req.body.apartmentId) : (missings+="apartmentId " , null)),
-    S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null) ),
-    E_Year: (req.body.endYear ? (req.body.endYear) : (missings+="endYear" , null)),
+    S_Year:( yearValidate(req.body.startYear) ? (req.body.startYear) : (missings+="startYear " , null) ),
+    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings+="endYear" , null)),
     APA_Text: (req.body.apartamentText ? (req.body.apartamentText) : (missings+="apartamentText " , null)),
     APA_rank: (req.body.rank ? (req.body.rank) : (missings+="rank " , null)),
     Cost: (req.body.rentCost ? (req.body.rentCost ) : (missings+="rentCost " , null)),
@@ -214,8 +220,8 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     BU_Id: (req.body.buildingId ? (req.body.buildingId) : (missings+="buildingId " , null)),
     APA_Id : (req.body.apartmentId ? (req.body.apartmentId) : (missings+="apartmentId " , null)),
-    S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null)),
-    E_Year: (req.body.endYear ? (req.body.endYear) : (missings+="endYear " , null)),
+    S_Year:(yearValidate(req.body.startYear) ? (req.body.startYear) : (missings+="startYear " , null)),
+    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings+="endYear " , null)),
     BU_Students: (req.body.levelOfStudents ? (req.body.levelOfStudents) : (missings+="levelOfStudents " , null)),
     BU_Text: (req.body.buildingText ? (req.body.buildingText) : (missings+="buildingText " , null)),
     BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings+="buildingRank " , null)),
@@ -353,7 +359,7 @@ router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
     User_Id: 0,
     BU_Id: 0,
     APA_Id : 0,
-    // S_Year: 1,
+    // S_Year:1,
     // E_Year: 1,
     // BU_Students: 1,
     // BU_Text: 1,
@@ -428,7 +434,7 @@ router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
     User_Id: 0,
     // BU_Id: 1,
     APA_Id : 0,
-    // S_Year: 1,
+    // S_Year:1,
     // E_Year: 1,
     // BU_Students: 1,
     // BU_Text: 1,
@@ -463,8 +469,8 @@ router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
   let isAuthorized = null
   if(!req.body.IdOfPost) missings+="IdOfPost "
   const newAppartmentPost={
-    S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null) ),
-    E_Year: (req.body.endYear ? (req.body.endYear) : (missings+="endYear" , null)),
+    S_Year: (yearValidate(req.body.startYear) ? (req.body.startYear) : (missings+="startYear " , null) ),
+    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings+="endYear" , null)),
     APA_Text: (req.body.apartamentText ? (req.body.apartamentText) : (missings+="apartamentText " , null)),
     APA_rank: (req.body.rank ? (req.body.rank) : (missings+="rank " , null)),
     Cost: (req.body.rentCost ? (req.body.rentCost ) : (missings+="rentCost " , null)),
@@ -505,8 +511,8 @@ router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
   let isAuthorized = null
   if(!req.body.IdOfPost) missings += "IdOfPost "
   const updatedBuildingPost={
-    S_Year: (req.body.startYear ? (req.body.startYear) : (missings += "startYear ", null)),
-    E_Year: (req.body.endYear ? (req.body.endYear) : (missings += "endYear ", null)),
+    S_Year: (yearValidate(req.body.startYear)? (req.body.startYear) : (missings += "startYear ", null)),
+    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings += "endYear ", null)),
     BU_Students: (req.body.levelOfStudents ? (req.body.levelOfStudents) : (missings += "levelOfStudents ", null)),
     BU_Text: (req.body.buildingText ? (req.body.buildingText) : (missings += "buildingText ", null)),
     BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings += "buildingRank ", null)),
