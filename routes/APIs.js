@@ -113,8 +113,8 @@ router.post("/load", ensureAuth, ensureAdmin, async (req , res)=>{
   res.send("done")
 })
 
-const errorHandler=(err , name , code)=>{
-  if(!name) {return res.json({code: error.code, name:error.name})}
+const errorHandler=(res , error , name , code)=>{
+  if(error) {return res.json({code: error.code, name:error.name})}
   return res.json({code: code, name:name})
 }
 
@@ -128,7 +128,7 @@ const errorHandler=(err , name , code)=>{
 
 //@desc create new street  //isChanged V //missingChackedReturn V //tryCatchreturn v
 router.post('/createStreet', ensureAuth, ensureAdmin, async (req , res)=>{
-  if (!req.body.streetName){errorHandler(null,"server","req.body.streetName is missing"); return;}
+  if (!req.body.streetName){errorHandler( res , null,"server","req.body.streetName is missing"); return;}
   const newStreet = {
     ST_Id:uuidv4(),
     DB_Name: req.body.streetName,
@@ -137,7 +137,7 @@ router.post('/createStreet', ensureAuth, ensureAdmin, async (req , res)=>{
   try {
     await Street.create(newStreet)
   } catch (error) {
-    errorHandler(error)
+    errorHandler( res , error)
     return;
   }
   res.json({id: newStreet.ST_Id})
@@ -146,8 +146,8 @@ router.post('/createStreet', ensureAuth, ensureAdmin, async (req , res)=>{
 
 //@desc create new building //isChanged V  //missingChackedReturn V  //tryCatchreturn v
 router.post('/createBuilding', ensureAuth, async (req, res) => {
-  if ( !req.body.buildingName){errorHandler(null,"server"," req.body.buildingName is missing"); return;}
-  if ( !req.body.streetId){errorHandler(null,"server","req.body.streetId is missing"); return;}
+  if ( !req.body.buildingName){errorHandler( res , null,"server"," req.body.buildingName is missing"); return;}
+  if ( !req.body.streetId){errorHandler( res , null,"server","req.body.streetId is missing"); return;}
   const newBuilding={
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     BU_Id: await uuidv4(),
@@ -155,32 +155,31 @@ router.post('/createBuilding', ensureAuth, async (req, res) => {
     ST_Id: req.body.streetId,
     DB_Apartments : [],
   }
-  try{ await BU.create(newBuilding)  }catch(error){errorHandler(error);return;}
+  try{ await BU.create(newBuilding)  }catch(error){errorHandler( res , error);return;}
   try{ await Street.findOneAndUpdate({ST_Id:newBuilding.ST_Id}, {$push: {DB_Buildings: {
     Id: newBuilding.BU_Id,
     Name: newBuilding.BU_Name
-  }}}) }catch(error){errorHandler(error); return}
+  }}}) }catch(error){errorHandler( res , error); return}
   res.json({id: newBuilding.BU_Id})
 })
 
 
 //@desc create new apartment //isChanged V  //missingChackedReturn V  //tryCatchreturn V
-router.post('/createApartment', ensureAuth, async (req, res) => { 
-  if ( !req.body.buildingId){errorHandler(null,"server","req.body.buildingId is missing"); return;}
-  if ( !req.body.streetId){errorHandler(null,"server","req.body.streetId is missing"); return;}
-  if ( !req.body.apartmentName){errorHandler(null,"server","req.body.apartmentName is missing"); return;}
+router.post('/createApartment', ensureAuth, async (req, res) => {
+  let missings = "" 
   const newApartment={
     APA_Id: uuidv4(),
     CreatorsGoogleID : req.user.googleId,//for security ONLY
-    BU_Id: req.body.buildingId,
-    ST_Id: req.body.streetId,
-    APA_Name: req.body.apartmentName
+    BU_Id : (req.body.buildingId ? (req.body.buildingId) : (missings+="buildingId " , null)),
+    ST_Id: (req.body.streetId ? (req.body.streetId) : (missings+="streetId " , null) ),
+    APA_Name: (req.body.apartmentName ? (req.body.apartmentName) : (missings+="apartmentName" , null)),
   }
-  try{ await APA.create(newApartment) }catch(error){errorHandler(error); return}
+  if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
+  try{ await APA.create(newApartment) }catch(error){errorHandler( res , error); return}
   try{ await BU.findOneAndUpdate({BU_Id:newApartment.BU_Id}, {$push: { DB_Apartments:{
     Id: newApartment.APA_Id,
     Name: newApartment.APA_Name
-  }}})}catch(error){errorHandler(error); return}
+  }}})}catch(error){errorHandler( res , error); return}
   res.json({id: newApartment.APA_Id})
 })
 
@@ -200,12 +199,8 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
     Cost: (req.body.rentCost ? (req.body.rentCost ) : (missings+="rentCost " , null)),
     bills: (req.body.heshbonot ? (req.body.heshbonot) : (missings+="heshbonot " , null)),
   }
-  if(missings!=""){
-    errorHandler(null , "server" , "missing fields: : "+missings);
-    return;
-  }
-
-  try{ await APA_Post.create(newAppartmentPost) }catch(error){errorHandler(error); return;}
+  if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
+  try{ await APA_Post.create(newAppartmentPost) }catch(error){errorHandler( res , error); return;}
   res.json({id: newAppartmentPost.Post_Id})
 })
 
@@ -225,8 +220,8 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
     BU_Text: (req.body.buildingText ? (req.body.buildingText) : (missings+="buildingText " , null)),
     BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings+="buildingRank " , null)),
   }
-  if(missings!=""){errorHandler(null , "server" , "missing fields: "+missings); return;}
-  try{ await BU_Post.create(newBuilding) }catch(error){errorHandler(error); return;}
+  if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
+  try{ await BU_Post.create(newBuilding) }catch(error){errorHandler( res , error); return;}
   res.json({id: newBuildingPost.Post_Id})
 })
 
@@ -235,14 +230,15 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
 
 //@desc post all streets //isChanged V //tryCatchreturn v
 router.post('/getAllStreets', ensureAuth, async (req , res)=>{   
+  let DB_Streets = {}
+  let API_Streets = []
   try{
-    const DB_Streets = await Street.find({},{_id:0, DB_Buildings:0})//ST_Id: 1  DB_Name: 1
+    DB_Streets = await Street.find({},{_id:0, DB_Buildings:0})//ST_Id: 1  DB_Name: 1
+    console.log("getAllStreets")
   }catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
-  let API_Streets = []
-  console.log(DB_Streets)
   await DB_Streets.forEach((element)=>{
     API_Streets.push({
       Id: element.ST_Id,
@@ -255,18 +251,19 @@ router.post('/getAllStreets', ensureAuth, async (req , res)=>{
 
 //@desc post all buildings in a street  //isChanged - no need  //tryCatchreturn V
 router.post('/getBuildings', ensureAuth, async (req, res) => {
+  let street = {}
   if(!req.body.StreetId){ 
-    errorHandler(null , "server" ,"missing fields: StreetId")
+    errorHandler( res , null , "server" ,"missing fields: StreetId")
     return
   }
-  try { const street = await Street.findOne({ST_Id:req.body.StreetId},{
+  try { street = await Street.findOne({ST_Id:req.body.StreetId},{
     _id:0,
     CreatorsGoogleID: 0,
     Id:0,
     Name:0
     //DB_Buildings:1
   }) }catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
   res.json(DB_buildings.DB_Buildings)
@@ -275,12 +272,12 @@ router.post('/getBuildings', ensureAuth, async (req, res) => {
 
 //@desc post all apartments in a Building  //isChanged - no need  //tryCatchreturn V
 router.post('/getApartments', ensureAuth, async (req, res) => {
-  if(!req.body.BuildingId){ 
-    errorHandler(null , "server" ,"missing fields: BuildingId")
+  let building = {}
+  if(!req.body.buildingId){ 
+    errorHandler( res , null , "server" ,"missing fields: buildingId")
     return
   }
-  try{ 
-    const building = await BU.find({BU_Id : req.body.BuildingId},
+  try{ building = await BU.findOne({BU_Id : req.body.buildingId},
   { 
     _id:0,
     CreatorsGoogleID: 0,
@@ -289,22 +286,26 @@ router.post('/getApartments', ensureAuth, async (req, res) => {
     ST_Id:0,
     // DB_Apartments: 1
   })
+  console.log(building)
 }catch(error){
-  errorHandler(error)
+  errorHandler( res , error)
   return
 }
-  res.json(building.DB_Apartments)
+console.log(building)
+res.json(building.DB_Apartments)//צריך לעדכן את בדיקה שלא קיימים דירות ב
 })
 
 
 //@desc post all apartment posts for an apartment //isChanged V  //tryCatchreturn V
 router.post('/getApartmentPosts', ensureAuth, async (req, res) => {
-  if(!req.body.ApartmentId){ 
-    errorHandler(null , "server" ,"missing fields: ApartmentId")
+  let DB_ApartmentPosts = []
+  let API_ApartmentPosts = []
+  if(!req.body.apartmentId){ 
+    errorHandler( res , null , "server" ,"missing fields: apartmentId")
     return
   }
   try {
-    const DB_ApartmentPosts = await APA_Post.find({APA_Id: req.body.ApartmentId},
+    DB_ApartmentPosts = await APA_Post.find({APA_Id: req.body.apartmentId},
     {
       _id: 0,
       CreatorsGoogleID: 0,
@@ -319,10 +320,9 @@ router.post('/getApartmentPosts', ensureAuth, async (req, res) => {
       // bills:1
     })
   } catch (error) {
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
-  let API_ApartmentPosts = []
   DB_ApartmentPosts.forEach((element) => {
     API_ApartmentPosts.push({
       postId: element.Post_Id,
@@ -340,11 +340,13 @@ router.post('/getApartmentPosts', ensureAuth, async (req, res) => {
 
 //@desc post all building post for a building
 router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
-  if(!req.body.BuildingId){ 
-    errorHandler(null , "server" ,"missing fields: BuildingId")
+  let DB_BuildingPosts = []
+  let API_BuildingPosts = []
+  if(!req.body.buildingId){ 
+    errorHandler( res , null , "server" ,"missing fields: buildingId")
     return
   }
-  try{ const DB_BuildingPosts = await BU_Post.find({BU_Id: req.body.BuildingId},{
+  try{ DB_BuildingPosts = await BU_Post.find({BU_Id: req.body.buildingId},{
     _id:0,
     CreatorsGoogleID: 0,
     // Post_Id: 1,
@@ -357,10 +359,9 @@ router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
     // BU_Text: 1,
     // BU_rank: 1 
   }) }catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
-  let API_BuildingPosts = []
   DB_BuildingPosts.forEach((element) => {
     API_BuildingPosts.push(
     {
@@ -380,11 +381,13 @@ router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
 
 //@desc post all apartment posts that belongs to a user
 router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
+  let DB_ApartmentPosts=[]
+  let API_ApartmentPosts = []
   if(!req.body.userId){ 
-    errorHandler(null , "server" ,"missing fields: userId")
+    errorHandler( res , null , "server" ,"missing fields: userId")
     return
   }
-  try {const DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.userId},
+  try {DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.userId},
   {
     _id: 0,
     CreatorsGoogleID: 0,
@@ -398,10 +401,9 @@ router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
     // Cost:1,
     // bills:1
   }) }catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
-  let API_ApartmentPosts = []
   DB_ApartmentPosts.forEach((element) => {
     API_ApartmentPosts.push(
     {
@@ -421,11 +423,13 @@ router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
 
 //@desc post all building post that belongs to a user
 router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
+  let DB_BuildingPosts = []
+  let API_BuildingPosts = []
   if(!req.body.userId){ 
-    errorHandler(null , "server" ,"missing fields: userId")
+    errorHandler( res , null , "server" ,"missing fields: userId")
     return
   }
-  try{ const DB_BuildingPosts = await BU_Post.find({User_Id: req.user.userId},{
+  try{ DB_BuildingPosts = await BU_Post.find({User_Id: req.user.userId},{
     _id:0,
     CreatorsGoogleID: 0,
     // Post_Id: 1,
@@ -438,10 +442,9 @@ router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
     // BU_Text: 1,
     // BU_rank: 1 
   })}catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
-  let API_BuildingPosts = []
   DB_BuildingPosts.forEach((element) => {
     API_BuildingPosts.push(
     {
@@ -465,6 +468,7 @@ router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
 //@desc update apartment post only if authonticated user id is muching the post id
 router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
   let missings =""
+  let isAuthorized = null
   if(!req.body.IdOfPost) missings+="IdOfPost "
   const newAppartmentPost={
     S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null) ),
@@ -475,13 +479,13 @@ router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
     bills: (req.body.heshbonot ? (req.body.heshbonot) : (missings+="heshbonot " , null)),
   }
   if(missings!=""){
-    errorHandler(null , "server" , "missing fields: "+missings);
+    errorHandler( res , null , "server" , "missing fields: "+missings);
     return;
   }
   try {
-    const isAuthorized = await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId
+    isAuthorized = await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId
   }catch(error){
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
   if(isAuthorized){
@@ -491,14 +495,14 @@ router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
         { $set: newAppartmentPost }
       )
     }catch(error){
-      errorHandler(error)
+      errorHandler( res , error)
       return
     }
     res.json({
       id : req.body.IdOfPost
     })
   }else{
-    errorHandler(null, "server" , "not The Post Owner")
+    errorHandler( res , null, "server" , "not The Post Owner")
   }
 })
 
@@ -506,6 +510,7 @@ router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
 //@desc update building post only if authonticated user id is muching the post id
 router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
   let missings =""
+  let isAuthorized = null
   if(!req.body.IdOfPost) missings += "IdOfPost "
   const updatedBuildingPost={
     S_Year: (req.body.startYear ? (req.body.startYear) : (missings += "startYear ", null)),
@@ -514,9 +519,9 @@ router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
     BU_Text: (req.body.buildingText ? (req.body.buildingText) : (missings += "buildingText ", null)),
     BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings += "buildingRank ", null)),
   }
-  if(missings!=""){errorHandler(null , "server" , "missing fields: "+missings); return;}
-  try { const isAuthorized = await BU_Post.findOne({Post_Id: req.body.IdOfPost}).userId == req.user.userId} catch (error) {
-    errorHandler(error)
+  if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
+  try { isAuthorized = await BU_Post.findOne({Post_Id: req.body.IdOfPost}).userId == req.user.userId} catch (error) {
+    errorHandler( res , error)
     return
   }
   if (isAuthorized) {
@@ -524,14 +529,14 @@ router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
       await BU_Post.findOneAndUpdate({Post_Id: req.body.IdOfPost},
         {$set: updatedBuildingPost})
     } catch (error) {
-      errorHandler(error)
+      errorHandler( res , error)
       return
     }
     res.json({
       id : req.body.IdOfPost
     })
   } else {
-    errorHandler(null, "server", "not The Post Owner")
+    errorHandler( res , null, "server", "not The Post Owner")
   }
 })
 
@@ -540,13 +545,14 @@ router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
 
 //@desc delet post by post id only if userId is muching
 router.post('/deleteApartmentPost' , ensureAuth , async (req , res) => {
+  let isAuthorized = null
   if(!req.body.IdOfPost){ 
-    errorHandler(null , "server" ,"missing fields: IdOfPost")
+    errorHandler( res , null , "server" ,"missing fields: IdOfPost")
     return
   }
-  try { const isAuthorized = await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId
+  try { isAuthorized = await APA_Post.findOne({Post_Id : req.body.IdOfPost}).userId == req.user.userId
   }catch (error) {
-    errorHandler(error)
+    errorHandler( res , error)
     return
   }
   if (isAuthorized) {
@@ -554,22 +560,23 @@ router.post('/deleteApartmentPost' , ensureAuth , async (req , res) => {
       await APA_Post.findOneAndDelete({Post_Id : req.body.IdOfPost})
       res.json({id : req.body.IdOfPost})
     } catch (error) {
-      errorHandler(error)
+      errorHandler( res , error)
       return
     }
   } else {
-    errorHandler(null, "server", "notThePostOwner")
+    errorHandler( res , null, "server", "notThePostOwner")
   }
 })
 
 
 //@desc delet post by post id only if userId is muching
 router.post('/deleteBuildingPost', ensureAuth, async (req, res) => {
+  let isAuthorized = null
   if(!req.body.IdOfPost){ 
-    errorHandler(null , "server" ,"missing fields: IdOfPost")
+    errorHandler( res , null , "server" ,"missing fields: IdOfPost")
     return
   }
-  try {const isAuthorized = await BU_Post.findOne({Post_Id: req.body.IdOfPost}).userId == req.user.userId} catch (error) {errorHandler(error)}
+  try { isAuthorized = await BU_Post.findOne({Post_Id: req.body.IdOfPost}).userId == req.user.userId} catch (error) {errorHandler( res , error)}
   if (isAuthorized) {
     try {
       await BU_Post.findOneAndDelete({
@@ -579,11 +586,11 @@ router.post('/deleteBuildingPost', ensureAuth, async (req, res) => {
         id: req.body.IdOfPost
       })
     } catch (error) {
-      errorHandler(error)
+      errorHandler( res , error)
       return
     }
   } else {
-    errorHandler(null, "server", "notThePostOwner")
+    errorHandler( res , null, "server", "notThePostOwner")
   }
 })
 
