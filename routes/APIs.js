@@ -191,7 +191,7 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
     Post_Id: uuidv4(),
     User_Id: req.user.userId,
     CreatorsGoogleID : req.user.googleId,//for security ONLY
-    APA_Id : (req.body.apartamentId ? (req.body.apartamentId) : (missings+="apartamentId " , null)),
+    APA_Id : (req.body.apartmentId ? (req.body.apartmentId) : (missings+="apartmentId " , null)),
     S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null) ),
     E_Year: (req.body.endYear ? (req.body.endYear) : (missings+="endYear" , null)),
     APA_Text: (req.body.apartamentText ? (req.body.apartamentText) : (missings+="apartamentText " , null)),
@@ -213,7 +213,7 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
     User_Id: req.user.userId,
     CreatorsGoogleID : req.user.googleId,//for security ONLY
     BU_Id: (req.body.buildingId ? (req.body.buildingId) : (missings+="buildingId " , null)),
-    APA_Id : (req.body.apartamentId ? (req.body.apartamentId) : (missings+="apartamentId " , null)),
+    APA_Id : (req.body.apartmentId ? (req.body.apartmentId) : (missings+="apartmentId " , null)),
     S_Year: (req.body.startYear ? (req.body.startYear) : (missings+="startYear " , null)),
     E_Year: (req.body.endYear ? (req.body.endYear) : (missings+="endYear " , null)),
     BU_Students: (req.body.levelOfStudents ? (req.body.levelOfStudents) : (missings+="levelOfStudents " , null)),
@@ -221,7 +221,7 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
     BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings+="buildingRank " , null)),
   }
   if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
-  try{ await BU_Post.create(newBuilding) }catch(error){errorHandler( res , error); return;}
+  try{ await BU_Post.create(newBuildingPost) }catch(error){errorHandler( res , error); return;}
   res.json({id: newBuildingPost.Post_Id})
 })
 
@@ -383,10 +383,6 @@ router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
 router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
   let DB_ApartmentPosts=[]
   let API_ApartmentPosts = []
-  if(!req.body.userId){ 
-    errorHandler( res , null , "server" ,"missing fields: userId")
-    return
-  }
   try {DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.userId},
   {
     _id: 0,
@@ -408,7 +404,7 @@ router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
     API_ApartmentPosts.push(
     {
       postId: element.Post_Id,
-      apartamentId: element.APA_Id,
+      apartmentId: element.APA_Id,
       startYear: element.S_Year,
       endYear: element.E_Year,
       apartamentText: element.APA_Text,
@@ -425,10 +421,6 @@ router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
 router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
   let DB_BuildingPosts = []
   let API_BuildingPosts = []
-  if(!req.body.userId){ 
-    errorHandler( res , null , "server" ,"missing fields: userId")
-    return
-  }
   try{ DB_BuildingPosts = await BU_Post.find({User_Id: req.user.userId},{
     _id:0,
     CreatorsGoogleID: 0,
@@ -656,10 +648,10 @@ router.post('/JsonOfAllApartments', ensureAuth, (req, res) => {
 //@desc login/landing
 //@route GET /
 router.post('/JsonOfAllComments', ensureAuth, (req, res) => {
-  const apartamentId = req.body.apartmentId;
+  const apartmentId = req.body.apartmentId;
   res.json({
     apartmentComments: [{
-      apartamentID: 1937135469834,
+      apartmentId: 1937135469834,
       postID: 1937135469834,
       startYear: 2019,
       endYear: 2020,
