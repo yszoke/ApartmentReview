@@ -45,6 +45,7 @@ const APA_PostSchema = new mongoose.Schema({
 
 //unique inforcment indexes
 APA_PostSchema.index({APA_Id:1, User_Id:1}, { unique: true })
+APA_PostSchema.index({E_Year:1, User_Id:1}, { unique: true })
 
 //quering efficency indexes
 APA_PostSchema.index({Post_Id:1})

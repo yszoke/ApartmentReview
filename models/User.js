@@ -29,6 +29,12 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  aciveYears: [{
+    Year:{
+      type: Number,
+      required: true,
+    }
+  }]
 },{autoIndex:false})
 
 
