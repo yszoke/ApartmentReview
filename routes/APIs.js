@@ -237,23 +237,17 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
   try {
     const dataObject = dataObjectCreator(req, res, reqInfo, addings)
     if (!dataObject) {return}
+    const userData= await User.findOne({User_Id:req.user.User_Id},{activeYears:1})
+    const postRange = extreamsToRange (req.body[dbNames.S_Year], req.body[dbNames.E_Year])
+    findIdenticalYears(userData , postRange )
     await APA_Post.create(dataObject) 
+    await User.findOneAndUpdate ({User_Id:req.user.User_Id},{
+      $push: {activeYears: createUserPairs(dataObject.Post_Id , postRange)}
+    })
     res.json({id: dataObject.Post_Id})
   } catch (err) {
     errorHandler(res, err)
   }
-
-  // try{ 
-  //   let user=await User.findOne({User_Id:req.user.User_Id})
-  //   if(isSameYears(user.aciveYears, req.body.startYear , req.body.endYear)){
-  //     await User.findOneAndUpdate({User_Id:req.user.User_Id},{
-  //       $pushAll: {Year:extreamsToRange(req.body.startYear,req.body.endYear)}
-  //     })
-  //   }else{
-  //     errorHandler(res, null,"server","two posts in one year")
-  //   }
-  // }catch(error){errorHandler( res , error); return}
-
 })
 
 //@desc create new building post //isChanged V  //missingChackedReturn V //tryCatchreturn 
@@ -493,6 +487,8 @@ router.post('/deleteApartmentPost', ensureAuth, async (req, res) => {
     if(!req.body[dbNames.Post_Id]){ throw `missing fields: ${dbNames.Post_Id}`}
     await authorizeReq (req , APA_Post , false)
     await APA_Post.findOneAndDelete({Post_Id: req.body.IdOfPost})
+    await User.update({User_Id:req.user.User_Id}, { $pull: { activeYears: { PostId: req.body.IdOfPost} } },
+    { multi: true })
     res.json({id: req.body.IdOfPost})
   } catch (error) {
     errorHandler(res, error)
@@ -566,6 +562,47 @@ const dataObjectCreator = (req , res , reqInfo , addings) =>{
     errorHandler(res, error)
   }
   return dataObject
+}
+
+const findIdenticalYears = (userData, postRange) =>{
+  console.log(userData.activeYears)
+  let identicalYears = []
+  postRange.forEach((postYear) => {
+    userData.activeYears.forEach((userPair) =>{
+      if(postYear==userPair.Year){
+        identicalYears.push(userPair) 
+      }
+    })
+  })
+  if(identicalYears.length>0){
+    throw identicalYears
+  }
+}
+
+const extreamsToRange = (small , big) => {
+  small = toIntOrNull(small)
+  big = toIntOrNull(big)
+  if(small && big){
+    if(small==big){
+      return[big]
+    }else{
+      let range =[]
+      while(small<big){
+        small++
+        range.push(small)
+      }
+      return range
+    }
+  }
+  return[]
+}
+
+const createUserPairs = (PostId , postRange) =>{
+  const userPairs=[]
+  postRange.forEach((year)=>{
+    userPairs.push({Year: year, PostId: PostId })
+  })
+  return userPairs
 }
 
 const clearSessionChekings = (req) =>{
@@ -647,33 +684,6 @@ const justReturnBack = (value) => {
   return value
 }
 
-const extreamsToRange = (small , big) => {
-  small = toIntOrNull(small)
-  big = toIntOrNull(big)
-  if(small && big){
-    if(small==big){
-      return[big]
-    }else{
-      let range =[]
-      while(small<big){
-        small++
-        range.push(small)
-      }
-      return range
-    }
-  }
-  return[]
-}
-
-const isSameYears = (range, small , big) => {
-  let newRange = extreamsToRange(small , big)
-  range.forEach(exist => {
-    newRange.forEach(newAdd => {
-      if(exist==newAdd){return true;}
-    })
-  });
-  return false;
-}
 
 const apartmentPostReqData = {
   APA_Id: [dbNames.APA_Id, null, justReturnBack],

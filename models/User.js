@@ -29,9 +29,13 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  aciveYears: [{
+  activeYears: [{
     Year:{
       type: Number,
+      required: true,
+    },
+    PostId:{
+      type: String,
       required: true,
     }
   }]

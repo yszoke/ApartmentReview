@@ -21,7 +21,7 @@ const StreetSchema = new mongoose.Schema({
   }]
 },{autoIndex:false})
 
-StreetSchema.index({DB_Name:1}, { unique: true })
+StreetSchema.index({ST_Name:1}, { unique: true })
 const streetModule=mongoose.model('Street', StreetSchema)
 streetModule.createIndexes()
 module.exports = streetModule
