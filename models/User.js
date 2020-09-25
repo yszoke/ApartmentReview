@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  userId:{
+  User_Id:{
     type: String,
     required: true
   },
@@ -42,6 +42,6 @@ const UserSchema = new mongoose.Schema({
 
 //quering efficency indexes
 UserSchema.index({userId:1})
-
-module.exports = mongoose.model('User', UserSchema)
-
+const Users = mongoose.model('User', UserSchema)
+Users.createIndexes()
+module.exports = Users

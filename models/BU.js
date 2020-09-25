@@ -35,6 +35,7 @@ BU_Schema.index({ST_Id:1, BU_Name:1}, { unique: true })
 //quering efficency indexes
 BU_Schema.index({BU_Id:1})
 
-module.exports = mongoose.model('Buildings', BU_Schema)
-
+const Buildings = mongoose.model('Buildings', BU_Schema)
+Buildings.createIndexes ()
+module.exports = Buildings
 // DB:API CreatorsGoogleID:null BU_Name:buildingName BU_Id:buildinId ST_Id:streetId DB_Apartments:apartments

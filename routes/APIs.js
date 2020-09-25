@@ -102,10 +102,10 @@ router.post("/load", ensureAuth, ensureAdmin, async (req , res)=>{
   for(let i=0; i<streets.length; i++){
     const newO={
       ST_Id:uuidv4(),
-      DB_Name: streets[i],
+      ST_Name: streets[i],
       Buildings: {}
     }
-    const exsist = await Street.findOne({ DB_Name: newO.DB_Name})
+    const exsist = await Street.findOne({ ST_Name: newO.ST_Name})
     if(!exsist){
       await Street.create(newO)
       console.log(newO)
@@ -120,12 +120,32 @@ router.post("/load", ensureAuth, ensureAdmin, async (req , res)=>{
 ///////////////////////////////
 
 
+const dbNames = {
+  BU_Id: "buildingId",
+  APA_Id: "apartmentId",
+  S_Year: "startYear",
+  E_Year: "endYear",
+  BU_Students: "levelOfStudents",
+  BU_Text: "buildingText",
+  BU_Rank: "buildingRank",
+  APA_Text: "apartamentText",
+  APA_rank: "rank",
+  Cost: "rentCost",
+  Bills: "heshbonot",
+  ST_Name: "streetName",
+  BU_Name: "buildingName",
+  ST_Id: "streetId",
+  APA_Name: "apartmentName",
+  Post_Id : "IdOfPost"
+  
+}
+
 //////////////////          CREATE            ///////////////////////////
 
 //@desc create new street  //isChanged V //missingChackedReturn V //tryCatchreturn v
 router.post('/createStreet', ensureAuth, ensureAdmin, async (req, res) => {
   const reqInfo = {
-    DB_Name: ["streetName", null, justReturnBack],
+    ST_Name: [dbNames.ST_Name, null, justReturnBack],
   }
   const addings = {
     ST_Id: uuidv4(),
@@ -142,8 +162,8 @@ router.post('/createStreet', ensureAuth, ensureAdmin, async (req, res) => {
 //@desc create new building //isChanged V  //missingChackedReturn V  //tryCatchreturn v
 router.post('/createBuilding', ensureAuth, async (req, res) => {
   const reqInfo = {
-    BU_Name: ["buildingName", null, justReturnBack],
-    ST_Id: ["streetId", null, justReturnBack],
+    BU_Name: [dbNames.BU_Name, null, justReturnBack],
+    ST_Id: [dbNames.ST_Id, null, justReturnBack],
   }
   const addings = {
     CreatorsGoogleID: req.user.googleId, //for security ONLY
@@ -169,16 +189,15 @@ router.post('/createBuilding', ensureAuth, async (req, res) => {
     })
   } catch (error) {
     errorHandler(res, error);
-    return;
   }
 })
 
 //@desc create new apartment //isChanged V  //missingChackedReturn V  //tryCatchreturn V
 router.post('/createApartment', ensureAuth, async (req, res) => {
   const reqInfo = {
-    BU_Id: ["buildingId", null, justReturnBack],
-    ST_Id: ["streetId", null, justReturnBack],
-    APA_Name: ["apartmentName", null, justReturnBack],
+    BU_Id: [dbNames.BU_Id, null, justReturnBack],
+    ST_Id: [dbNames.ST_Id, null, justReturnBack],
+    APA_Name: [dbNames.APA_Name, null, justReturnBack],
   }
   const addings = {
     APA_Id: uuidv4(),
@@ -209,18 +228,10 @@ router.post('/createApartment', ensureAuth, async (req, res) => {
 //@desc create new apartment post //isChanged V //missingChackedReturn V /tryCatchreturn V
 router.post('/createApartmentPost', ensureAuth, async (req, res) => {
 
-  const reqInfo = {
-    S_Year: ["startYear", yearValidate, toIntOrNull],
-    E_Year: ["endYear", yearValidate, toIntOrNull],
-    APA_Id: ["levelOfStudents", null, justReturnBack],
-    APA_Text: ["buildingText", null, justReturnBack],
-    APA_rank: ["buildingRank", OneToFiveValidate, toIntOrNull],
-    Cost: ["buildingRank", null, toIntOrNull],
-    bills: ["buildingRank", null, toIntOrNull],
-  }
+  const reqInfo = {...apartmentPostReqData}
   const addings = {
       Post_Id: uuidv4(),
-      User_Id: req.user.userId,
+      User_Id: req.user.User_Id,
       CreatorsGoogleID : req.user.googleId,//for security ONLY
   }
   try {
@@ -233,9 +244,9 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
   }
 
   // try{ 
-  //   let user=await User.findOne({userId:req.user.userId})
+  //   let user=await User.findOne({User_Id:req.user.User_Id})
   //   if(isSameYears(user.aciveYears, req.body.startYear , req.body.endYear)){
-  //     await User.findOneAndUpdate({userId:req.user.userId},{
+  //     await User.findOneAndUpdate({User_Id:req.user.User_Id},{
   //       $pushAll: {Year:extreamsToRange(req.body.startYear,req.body.endYear)}
   //     })
   //   }else{
@@ -247,18 +258,10 @@ router.post('/createApartmentPost', ensureAuth, async (req, res) => {
 
 //@desc create new building post //isChanged V  //missingChackedReturn V //tryCatchreturn 
 router.post('/createBuildingPost', ensureAuth, async (req, res) => {
-  const reqInfo = {
-    BU_Id: ["buildingId", null, justReturnBack],
-    APA_Id: ["apartmentId", null, justReturnBack],
-    S_Year: ["startYear", yearValidate, toIntOrNull],
-    E_Year: ["endYear", yearValidate, toIntOrNull],
-    BU_Students: ["levelOfStudents", OneToFiveValidate, toIntOrNull],
-    BU_Text: ["buildingText", null, justReturnBack],
-    BU_rank: ["buildingRank", OneToFiveValidate, toIntOrNull],
-  }
-  const addingds = {
+  let reqInfo = {...BuildingPostReqData}
+  const addings = {
     Post_Id: uuidv4(),
-    User_Id: req.user.userId,
+    User_Id: req.user.User_Id,
     CreatorsGoogleID: req.user.googleId, //for security ONLY
   }
   try {
@@ -282,12 +285,12 @@ router.post('/createBuildingPost', ensureAuth, async (req, res) => {
 router.post('/getAllStreets', ensureAuth, async (req , res)=>{   
   try{
     let API_Streets = []
-    let DB_Streets = await Street.find({},{_id:0, DB_Buildings:0})//ST_Id: 1  DB_Name: 1
+    let DB_Streets = await Street.find({},{_id:0, DB_Buildings:0})//ST_Id: 1  ST_Name: 1
     console.log("getAllStreets")
     await DB_Streets.forEach((element)=>{
       API_Streets.push({
         Id: element.ST_Id,
-        streetName: element.DB_Name
+        streetName: element.ST_Name
       })
     })
     res.json(API_Streets)
@@ -299,10 +302,7 @@ router.post('/getAllStreets', ensureAuth, async (req , res)=>{
 //@desc post all buildings in a street  //isChanged - no need  //tryCatchreturn V
 router.post('/getBuildings', ensureAuth, async (req, res) => {
   try { 
-    if(!req.body.StreetId){ 
-      errorHandler( res , "missing fields: StreetId")
-      return
-    }
+    if(!req.body[dbNames.ST_Id]){ throw `missing fields: ${dbNames.ST_Id}` }
     let street = await Street.findOne({ST_Id:req.body.StreetId},{
       _id:0,
       CreatorsGoogleID: 0,
@@ -319,10 +319,7 @@ router.post('/getBuildings', ensureAuth, async (req, res) => {
 //@desc post all apartments in a Building  //isChanged - no need  //tryCatchreturn V
 router.post('/getApartments', ensureAuth, async (req, res) => {
   try {
-    if (!req.body.buildingId) {
-      errorHandler(res, "missing fields: buildingId")
-      return
-    }
+    if(!req.body[dbNames.BU_Id]){ throw `missing fields: ${dbNames.BU_Id}`}
     let building = await BU.findOne({
       BU_Id: req.body.buildingId
     }, {
@@ -342,11 +339,8 @@ router.post('/getApartments', ensureAuth, async (req, res) => {
 //@desc post all apartment posts for an apartment //isChanged V  //tryCatchreturn V
 router.post('/getApartmentPosts', ensureAuth, async (req, res) => {
   try {
-    if(!req.body.apartmentId){ 
-      errorHandler( res ,"missing fields: apartmentId")
-      return
-    }
-    let DB_ApartmentPosts = await APA_Post.find({APA_Id: req.body.apartmentId},
+    if(!req.body[dbNames.APA_Id]){ throw `missing fields: ${dbNames.APA_Id}` }
+    let DB_ApartmentPosts = await APA_Post.find({APA_Id: req.body[dbNames.APA_Id]},
     {
       _id: 0,
       CreatorsGoogleID: 0,
@@ -360,34 +354,19 @@ router.post('/getApartmentPosts', ensureAuth, async (req, res) => {
       // Cost:1,
       // bills:1
     })
-    let API_ApartmentPosts = []
-    DB_ApartmentPosts.forEach((element) => {
-      API_ApartmentPosts.push({
-        postId: element.Post_Id,
-        startYear: element.S_Year,
-        endYear: element.E_Year,
-        apartamentText: element.APA_Text,
-        rank: element.APA_rank,
-        rentCost: element.Cost,
-        heshbonot: element.bills
-      })
-    })
-    res.json(API_ApartmentPosts)
+    const DBInfo = {...apartmentPostReqData}
+    DBInfo.Post_Id=["PostId"]
+    res.json(hideDB_Names(DB_ApartmentPosts , DBInfo)) 
   } catch (error) {
     errorHandler( res , error)
-    return
   }
 })
 
 //@desc post all building post for a building
 router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
-  let DB_BuildingPosts = []
-  let API_BuildingPosts = []
-  if(!req.body.buildingId){ 
-    errorHandler( res , "missing fields: buildingId")
-    return
-  }
-  try{ DB_BuildingPosts = await BU_Post.find({BU_Id: req.body.buildingId},{
+  try{ 
+    if(!req.body[dbNames.BU_Id]){ throw `missing fields: ${dbNames.BU_Id}`}
+    let DB_BuildingPosts = await BU_Post.find({BU_Id: req.body[dbNames.BU_Id]},{
     _id:0,
     CreatorsGoogleID: 0,
     // Post_Id: 1,
@@ -398,33 +377,20 @@ router.post('/getBuildingPosts', ensureAuth, async(req, res) => {
     // E_Year: 1,
     // BU_Students: 1,
     // BU_Text: 1,
-    // BU_rank: 1 
-  }) }catch(error){
-    errorHandler( res , error)
-    return
-  }
-  DB_BuildingPosts.forEach((element) => {
-    API_BuildingPosts.push(
-    {
-      postId: element.Post_Id,
-      startYear: element.S_Year,
-      endYear: element.E_Year,
-      apartamentText: element.APA_Text,
-      rank: element.APA_rank,
-      levelOfStudents: element.BU_Students,
-      buildingText: element.BU_Text,
-      buildingRank: element.BU_rank
-    })
+    // BU_Rank: 1 
   })
-  res.json(API_BuildingPosts)
+    const DBInfo = {...BuildingPostReqData}
+    DBInfo.Post_Id=["PostId"]
+    res.json(hideDB_Names(DB_BuildingPosts , DBInfo))
+  }catch(error){
+    errorHandler( res , error)
+  }
 })
-
 
 //@desc post all apartment posts that belongs to a user
 router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
-  let DB_ApartmentPosts=[]
-  let API_ApartmentPosts = []
-  try {DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.userId},
+  try {
+    let DB_ApartmentPosts = await APA_Post.find({User_Id: req.user.User_Id},
   {
     _id: 0,
     CreatorsGoogleID: 0,
@@ -437,31 +403,19 @@ router.post('/getMyApartmentPosts', ensureAuth, async (req, res) => {
     // APA_rank:1,
     // Cost:1,
     // bills:1
-  }) }catch(error){
+  }) 
+  const DBInfo = {...apartmentPostReqData}
+  DBInfo.Post_Id=["PostId"]
+  res.json(hideDB_Names (DB_ApartmentPosts , DBInfo))
+  }catch(error){
     errorHandler( res , error)
-    return
   }
-  DB_ApartmentPosts.forEach((element) => {
-    API_ApartmentPosts.push(
-    {
-      postId: element.Post_Id,
-      apartmentId: element.APA_Id,
-      startYear: element.S_Year,
-      endYear: element.E_Year,
-      apartamentText: element.APA_Text,
-      rank: element.APA_rank,
-      rentCost: element.Cost,
-      heshbonot: element.bills
-    })
-  })
-  res.json(API_ApartmentPosts)
 })
 
 //@desc post all building post that belongs to a user
 router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
-  let DB_BuildingPosts = []
-  let API_BuildingPosts = []
-  try{ DB_BuildingPosts = await BU_Post.find({User_Id: req.user.userId},{
+  try{ 
+    let DB_BuildingPosts = await BU_Post.find({User_Id: req.user.User_Id},{
     _id:0,
     CreatorsGoogleID: 0,
     // Post_Id: 1,
@@ -472,26 +426,15 @@ router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
     // E_Year: 1,
     // BU_Students: 1,
     // BU_Text: 1,
-    // BU_rank: 1 
-  })}catch(error){
-    errorHandler( res , error)
-    return
-  }
-  DB_BuildingPosts.forEach((element) => {
-    API_BuildingPosts.push(
-    {
-      postId: element.Post_Id,
-      buildingId: element.BU_Id,
-      startYear: element.S_Year,
-      endYear: element.E_Year,
-      apartamentText: element.APA_Text,
-      rank: element.APA_rank,
-      levelOfStudents: element.BU_Students,
-      buildingText: element.BU_Text,
-      buildingRank: element.BU_rank
-    })
+    // BU_Rank: 1 
   })
-  res.json(API_BuildingPosts)
+  const DBInfo = {... BuildingPostReqData}
+  DBInfo.Post_Id=["PostId"]
+  res.json(hideDB_Names(DB_BuildingPosts , DBInfo))
+}catch(error){
+    errorHandler( res , error)
+  }
+  
 })
 
 
@@ -499,152 +442,116 @@ router.post('/getMyBuildingPosts', ensureAuth, async(req, res) => {
 
 //@desc update apartment post only if authonticated user id is muching the post id
 router.post('/updateApartmentPost' , ensureAuth , async (req , res) => {
-  let missings =""
-  let isOwner = null
-  let sameYear = null
-  if(!req.body.IdOfPost) missings+="IdOfPost "
-  const newAppartmentPost={
-    S_Year: (yearValidate(req.body.startYear) ? (req.body.startYear) : (missings+="startYear " , null) ),
-    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings+="endYear" , null)),
-    APA_Text: (req.body.apartamentText ? (req.body.apartamentText) : (missings+="apartamentText " , null)),
-    APA_rank: (req.body.rank ? (req.body.rank) : (missings+="rank " , null)),
-    Cost: (req.body.rentCost ? (req.body.rentCost ) : (missings+="rentCost " , null)),
-    bills: (req.body.heshbonot ? (req.body.heshbonot) : (missings+="heshbonot " , null)),
-  }
-  if(missings!=""){
-    errorHandler( res , null , "server" , "missing fields: "+missings);
-    return;
-  }
+  let reqInfo = {...apartmentPostReqData}
+  reqInfo.Post_Id = [dbNames.Post_Id,null , null]
+  delete reqInfo.S_Year 
+  delete reqInfo.E_Year 
+  delete reqInfo.APA_Id 
+  const addings = {}
   try {
-    let before = await APA_Post.findOne({Post_Id : req.body.IdOfPost})
-    isOwner = (before.userId == req.user.userId)
-    sameYear =  (before.E_Year == new Date().getFullYear())
-  }catch(error){
-    errorHandler( res , error)
-    return
-  }
-  if(isOwner && sameYear){
-    try {
-      await APA_Post.findOneAndUpdate(
-        { Post_Id: req.body.IdOfPost },
-        { $set: newAppartmentPost }
-      )
-    }catch(error){
-      errorHandler( res , error)
-      return
-    }
-    res.json({
-      id : req.body.IdOfPost
+    const dataObject = dataObjectCreator(req, res, reqInfo, addings)
+    if (!dataObject) {return}
+    authorizeReq(req, APA_Post, true)
+    await APA_Post.findOneAndUpdate({Post_Id: req.body.IdOfPost}, {
+      $set: dataObject
     })
-  }else{
-    let messege = (isOwner ? "" : "not The Post Owner  ")
-    messege += (sameYear ? "" : "cant update posts from last year")
-    errorHandler( res , null, "server" , messeges)
+    res.json({id: req.body.IdOfPost})
+  } catch (err) {
+    errorHandler(res, err)
   }
 })
 
-
 //@desc update building post only if authonticated user id is muching the post id
 router.post('/updateBuildingPost', ensureAuth, async (req, res) => {
-  let missings =""
-  let isOwner = null
-  let sameYear = null
-  if(!req.body.IdOfPost) missings += "IdOfPost "
-  const updatedBuildingPost={
-    S_Year: (yearValidate(req.body.startYear)? (req.body.startYear) : (missings += "startYear ", null)),
-    E_Year: (yearValidate(req.body.endYear) ? (req.body.endYear) : (missings += "endYear ", null)),
-    BU_Students: (req.body.levelOfStudents ? (req.body.levelOfStudents) : (missings += "levelOfStudents ", null)),
-    BU_Text: (req.body.buildingText ? (req.body.buildingText) : (missings += "buildingText ", null)),
-    BU_rank: (req.body.buildingRank ? (req.body.buildingRank) : (missings += "buildingRank ", null)),
-  }
-  if(missings!=""){errorHandler( res , null , "server" , "missing fields: "+missings); return;}
+  let reqInfo = {...BuildingPostReqData}
+  reqInfo.Post_Id = [dbNames.Post_Id, null, null]
+  delete reqInfo.S_Year
+  delete reqInfo.BU_Id
+  delete reqInfo.APA_Id
+  const addings = {}
   try {
-    let before = await BU_Post.findOne({Post_Id : req.body.IdOfPost})
-    isOwner = (before.userId == req.user.userId)
-    sameYear =  (before.E_Year == new Date().getFullYear())
-  } catch (error) {
-    errorHandler( res , error)
-    return
-  }
-  if (isOwner && sameYear) {
-    try {
-      await BU_Post.findOneAndUpdate({Post_Id: req.body.IdOfPost},
-        {$set: updatedBuildingPost})
-    } catch (error) {
-      errorHandler( res , error)
-      return
-    }
-    res.json({
-      id : req.body.IdOfPost
+    const dataObject = dataObjectCreator(req, res, reqInfo, addings)
+    if (!dataObject) {return}
+    await authorizeReq(req, BU_Post, true)
+    await BU_Post.findOneAndUpdate({Post_Id: req.body.IdOfPost},{
+      $set: dataObject
     })
-  } else {
-    let messege = (isOwner ? "" : "not The Post Owner  ")
-    messege += (sameYear ? "" : "cant update posts from last year")
-    errorHandler( res , null, "server" , messeges)  }
+    res.json({
+      id: req.body.IdOfPost
+    })
+  } catch (err) {
+    errorHandler(res, err)
+  }
 })
 
 
 //////////////////          DELETE            ///////////////////////////
 
-//@desc delet post by post id only if userId is muching
+//@desc delet post by post id only if User_Id is muching
 router.post('/deleteApartmentPost', ensureAuth, async (req, res) => {
   try {
-    if (!req.body.IdOfPost) {
-      errorHandler(res, "missing fields: IdOfPost")
-      return
-    }
-    let isAuthorized = await APA_Post.findOne({
-      Post_Id: req.body.IdOfPost
-    }).userId == req.user.userId
-    if (isAuthorized) {
-      await APA_Post.findOneAndDelete({
-        Post_Id: req.body.IdOfPost
-      })
-      res.json({
-        id: req.body.IdOfPost
-      })
-    } else {
-      throw "not The Post Owner"
-    }
+    if(!req.body[dbNames.Post_Id]){ throw `missing fields: ${dbNames.Post_Id}`}
+    await authorizeReq (req , APA_Post , false)
+    await APA_Post.findOneAndDelete({Post_Id: req.body.IdOfPost})
+    res.json({id: req.body.IdOfPost})
   } catch (error) {
     errorHandler(res, error)
   }
 })
 
-
-//@desc delet post by post id only if userId is muching
+//@desc delet post by post id only if User_Id is muching
 router.post('/deleteBuildingPost', ensureAuth, async (req, res) => {
-  let isAuthorized = null
-  if(!req.body.IdOfPost){ 
-    errorHandler( res , null , "server" ,"missing fields: IdOfPost")
-    return
-  }
-  try { isAuthorized = await BU_Post.findOne({Post_Id: req.body.IdOfPost}).userId == req.user.userId} catch (error) {errorHandler( res , error)}
-  if (isAuthorized) {
-    try {
-      await BU_Post.findOneAndDelete({
-        Post_Id: req.body.IdOfPost
-      })
-      res.json({
-        id: req.body.IdOfPost
-      })
-    } catch (error) {
-      errorHandler( res , error)
-      return
-    }
-  } else {
-    errorHandler( res , null, "server", "notThePostOwner")
+  try { 
+    if(!req.body[dbNames.Post_Id]){ throw `missing fields: ${dbNames.Post_Id}`}
+    await authorizeReq (req , BU_Post , false)
+    await BU_Post.findOneAndDelete({Post_Id: req.body.IdOfPost})
+    res.json({ id: req.body.IdOfPost })
+  }catch (error) {
+    errorHandler( res , error)
   }
 })
 
 
-
-
 //////////////////          TEST            ///////////////////////////
 
-
 const errorHandler=(res , error)=>{
-  res.json(error)
+  if (error.code && error.code==11000){
+    delete error["keyValue"]
+    error["serverMessege"] = "not_Unique"
+    error["uniqueIndex"] = hideDB_Names(error["keyPattern"],dbNames)
+    delete error["keyPattern"] 
+  }
+  res.json({error : error})
+}
+
+const authorizeReq = async (req, postModule, checkYearAlso) => {
+  const postData= await postModule.findOne({Post_Id:req.body.IdOfPost})
+  const postOwner = postData.User_Id
+  const senderId= req.user.User_Id
+  const isOwner = postOwner == senderId
+  let error = ""
+  if(!isOwner){error +=  "not the post owner"}
+  if(checkYearAlso){
+    const oldPost = postData.E_Year<new Date().getFullYear()
+    if (oldPost){ error+= "cant update posts from last year"
+    }
+  }
+  if(error != ""){throw error}
+  return true
+}
+
+const hideDB_Names = (data, info) => {
+  let resDataObject = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (info[key]) {
+      if(typeof(info[key])=="string"){
+        resDataObject[info[key]] = value
+      }else{
+        resDataObject[info[key]][0] = value
+      }
+    }
+  }
+  return resDataObject
 }
 
 const dataObjectCreator = (req , res , reqInfo , addings) =>{
@@ -670,7 +577,7 @@ const clearSessionChekings = (req) =>{
 const validateMissingFields = (req , reqInfo) =>{
   for (const [key, value] of Object.entries(reqInfo)) {
     if(req.body[value[0]] == null){
-      if(req.session.missings){req.session.missings+=` ${key} ,`; continue}
+      if(req.session.missings){req.session.missings+=` ${value[0]} ,`; continue}
       req.session.missings=`missing fields: ${value[0]} , `
     }
   }
@@ -684,8 +591,8 @@ const validateFieldsFormat = (req , reqInfo) =>{
         value[1](req.body[value[0]])
       }
     } catch (error) {
-      if(req.session.formatIssuse){req.session.formatIssuse+=` ${key} ,`; continue}
-      req.session.formatIssuse=`format Issus:  ${key} ,`
+      if(req.session.formatIssuse){req.session.formatIssuse+=` ${value[0]} : ${error} ,`; continue}
+      req.session.formatIssuse=`format Issus:  ${value[0]} : ${error} ,`
     } 
   }
   if(req.session.formatIssuse){throw req.session.formatIssuse}
@@ -706,15 +613,29 @@ const createObjectForDB = ( req , reqInfo ) => {
 
 const yearValidate = (num) => {
   const year = new Date().getFullYear()
-  let result = toIntOrNull(num) ? (num+5> year && num<year+1) ? num : null : null
-  if(!result){throw "year value not valid"}
-  return result
+  num = toIntOrNull (num)
+  num = num ? (num+5> year && num<year+2) ? num : null : null
+  if(!num){throw "year value not valid"}
+  return num
 }
 
 const OneToFiveValidate = (num) => {
-  let result = toIntOrNull(num)? (num>0 && num<6) ? num : null : null
-  if(!result){throw "not a 1 to 5 value"}
-  return result
+  num = toIntOrNull (num)
+  num = num ? (num>0 && num<6) ? num : null : null
+  if(!num){throw "not a 1 to 5 value"}
+  return num
+}
+
+const isResenableCost = (num) => {
+  num = toIntOrNull (num)
+  num = num ? (num>-1 && num<10000) ? num : null : null
+  if(!num){throw "not a 1 to 5 value"}
+  return num
+}
+
+const isString = (string) => {
+  if(typeof(string) != "string"){throw "not a string value"}
+  return string
 }
 
 const toIntOrNull = (num) => {
@@ -754,13 +675,35 @@ const isSameYears = (range, small , big) => {
   return false;
 }
 
-router.post('/postToDb', ensureAuth, async (req, res) => {
+const apartmentPostReqData = {
+  APA_Id: [dbNames.APA_Id, null, justReturnBack],
+  S_Year: [dbNames.S_Year, yearValidate, toIntOrNull],
+  E_Year: [dbNames.E_Year, yearValidate, toIntOrNull],
+  APA_Text: [dbNames.APA_Text, isString, justReturnBack],
+  APA_rank: [dbNames.APA_rank, OneToFiveValidate, toIntOrNull],
+  Cost: [dbNames.Cost, isResenableCost, toIntOrNull],
+  Bills: [dbNames.Bills, isResenableCost, toIntOrNull],
+}
+
+const BuildingPostReqData = {
+  BU_Id: [dbNames.BU_Id, null, justReturnBack],
+  APA_Id: [dbNames.APA_Id, null, justReturnBack],
+  S_Year: [dbNames.S_Year, yearValidate, toIntOrNull],
+  E_Year: [dbNames.E_Year, yearValidate, toIntOrNull],
+  BU_Students: [dbNames.BU_Students, OneToFiveValidate, toIntOrNull],
+  BU_Text: [dbNames.BU_Text, isString, justReturnBack],
+  BU_Rank: [dbNames.BU_Rank, OneToFiveValidate, toIntOrNull],
+}
+
+
+
+router.post('/postTest', ensureAuth, async (req, res) => {
   const reqInfo = {
-    S_Year: ["startYear", yearValidate, toIntOrNull],
-    E_Year: ["endYear", yearValidate, toIntOrNull],
-    BU_Students: ["levelOfStudents", OneToFiveValidate, toIntOrNull],
-    BU_Text: ["buildingText", null, justReturnBack],
-    BU_rank: ["buildingRank", OneToFiveValidate, toIntOrNull]
+    S_Year: [dbNames.S_Year, yearValidate, toIntOrNull],
+    E_Year: [dbNames.E_Year, yearValidate, toIntOrNull],
+    BU_Students: [dbNames.BU_Students, OneToFiveValidate, toIntOrNull],
+    BU_Text: [dbNames.BU_Text, null, justReturnBack],
+    BU_Rank: [dbNames.BU_Rank, OneToFiveValidate, toIntOrNull]
   }
   const addings = {}
   try {
@@ -775,7 +718,3 @@ router.post('/postToDb', ensureAuth, async (req, res) => {
 
 
 module.exports = router
-
-
-
-

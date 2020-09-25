@@ -19,7 +19,7 @@ module.exports = function (passport) {
   const createUserObject = (profile) => {
     return {
       googleId: profile.id,
-      userId : uuidv4(),
+      User_Id : uuidv4(),
       displayName: profile.displayName,
       firstName: profile.name.givenName,
       lastName: profile.name.familyName,

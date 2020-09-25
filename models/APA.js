@@ -28,9 +28,9 @@ APA_Schema.index({BU_Id:1, APA_Name:1}, { unique: true })
 
 //quering efficency indexes
 APA_Schema.index({APA_Id:1})
-
-
-module.exports = mongoose.model('APA', APA_Schema)
+const Apartments = mongoose.model('APA', APA_Schema)
+Apartments.createIndexes()
+module.exports = Apartments
 
 //DB:API CreatorsGoogleID:null APA_Name:apartmentName APA_Id:apartmentId BU_Id:buildingId ST_Id:streetId
 

@@ -5,7 +5,7 @@ const StreetSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  DB_Name: {
+  ST_Name: {
     type: String,
     required: true,
   },
@@ -22,7 +22,8 @@ const StreetSchema = new mongoose.Schema({
 },{autoIndex:false})
 
 StreetSchema.index({DB_Name:1}, { unique: true })
-
-module.exports = mongoose.model('Street', StreetSchema)
-//DB:API ST_Id:Id  DB_Name:streetName  DB_Buildings:Buildingsindex
+const streetModule=mongoose.model('Street', StreetSchema)
+streetModule.createIndexes()
+module.exports = streetModule
+ //DB:API ST_Id:Id  DB_Name:streetName  DB_Buildings:Buildingsindex
 
